@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도배장판 견적 프로그램</title>
+    <style>
+        :root {
+            --primary-color: #4a6da7;
+            --secondary-color: #f5f7fa;
+            --accent-color: #3b82f6;
+            --border-color: #e2e8f0;
+            --font-color: #334155;
+            --light-bg: #f8fafc;
+            --danger-color: #ef4444;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            color: var(--font-color);
+            line-height: 1.6;
+            padding: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .custom-settings {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: var(--light-bg);
+            border-radius: 8px;
+        }
+        
+        .custom-settings select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .custom-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .custom-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            font-weight: 500;
+        }
+        
+        #createCustomBtn {
+            background-color: var(--accent-color);
+        }
+        
+        #deleteCustomBtn {
+            background-color: var(--danger-color);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: var(--light-bg);
+            border-radius: 8px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .form-row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .form-row > div {
+            flex: 1 0 48%;
+            min-width: 150px;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        input[type="number"] {
+            text-align: right;
+        }
+        
+        .info-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .section-title {
+            margin-top: 20px;
+            padding: 5px 0;
+            font-weight: 600;
+            border-bottom: a2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .result-row {
+            display: flex;
+            flex-direction: column;
+            padding: 15px 10px;
+            background-color: var(--light-bg);
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+        
+        .result-row span {
+            margin-bottom: 5px;
+        }
+        
+        .result-row .total {
+            color: var(--accent-color);
+            font-size: 18px;
+            margin-top: 5px;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .modal-header h2 {
+            font-size: 20px;
+            color: var(--primary-color);
+        }
+        
+        .close-modal {
+            font-size: 24px;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        
+        .modal-section {
+            margin-bottom: 20px;
+        }
+        
+        .modal-section h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        
+        .modal-footer button {
+            padding: 10px 15px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .save-btn {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .cancel-btn {
+            background-color: #e2e8f0;
+            color: var(--font-color);
+        }
+        
+        /* PC 화면용 스타일 */
+        @media (min-width: 768px) {
+            .custom-settings {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .custom-settings select {
+                flex: 2;
+                margin-right: 10px;
+                margin-bottom: 0;
+            }
+            
+            .custom-buttons {
+                flex: 1;
+            }
+            
+            .result-row {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            
+            .result-row span {
+                flex: 1;
+                text-align: center;
+                margin-bottom: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>도배장판 견적 프로그램</h1>
+        <p>ver250305</p>
+    </div>
+    
+    <div class="custom-settings">
+        <select id="customSetting">
+            <option value="default">기본값</option>
+        </select>
+        <div class="custom-buttons">
+            <button id="createCustomBtn">맞춤설정 만들기</button>
+            <button id="deleteCustomBtn">삭제</button>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="houseSize">평형대 선택</label>
+        <select id="houseSize">
+            <option value="">선택하세요</option>
+            <option value="13">13평 (43㎡)</option>
+            <option value="15">15평 (50㎡)</option>
+            <option value="18">18평 (60㎡)</option>
+            <option value="19">19평 (63㎡)</option>
+            <option value="22">22평 (73㎡)</option>
+            <option value="24">24평 (79㎡)</option>
+            <option value="25">25평 (83㎡)</option>
+            <option value="28">28평 (93㎡)</option>
+            <option value="32">32평 (106㎡)</option>
+            <option value="34">34평 (112㎡)</option>
+            <option value="38">38평 (126㎡)</option>
+            <option value="42">42평 (139㎡)</option>
+            <option value="45">45평 (149㎡)</option>
+            <option value="50">50평 (165㎡)</option>
+            <option value="55">55평 (182㎡)</option>
+            <option value="60">60평 (198㎡)</option>
+            <option value="65">65평 (215㎡)</option>
+            <option value="70">70평 (231㎡)</option>
+        </select>
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group">
+            <label for="livingWallpaper">거실 벽지 선택</label>
+            <select id="livingWallpaper">
+                <option value="">선택하세요</option>
+                <option value="1">소폭</option>
+                <option value="2">장폭</option>
+                <option value="3">실크</option>
+            </select>
+            <p class="info-text" id="livingArea">거실 벽지 면적: 0평</p>
+        </div>
+        
+        <div class="form-group">
+            <label for="roomWallpaper">방 벽지 선택</label>
+            <select id="roomWallpaper">
+                <option value="">선택하세요</option>
+                <option value="1">소폭</option>
+                <option value="2">장폭</option>
+                <option value="3">실크</option>
+            </select>
+            <p class="info-text" id="roomArea">방 벽지 면적: 0평</p>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label>벽지 가격</label>
+        <p class="info-text" id="wallpaperPrice">0원</p>
+    </div>
+    
+    <div class="form-group">
+        <label>인건비</label>
+        <p class="info-text" id="laborCost">0원</p>
+    </div>
+    
+    <div class="form-group">
+        <label>부자재 비용</label>
+        <p class="info-text" id="materialCost">0원</p>
+    </div>
+    
+    <div class="form-group">
+        <label for="extraCost">기타 비용</label>
+        <input type="number" id="extraCost" placeholder="0" min="0">
+    </div>
+    
+    <h2 class="section-title">장판 견적</h2>
+    
+    <div class="form-group">
+        <label for="flooringType">장판 종류</label>
+        <select id="flooringType">
+            <option value="">선택하세요</option>
+            <option value="1.8">KCC 1.8t</option>
+            <option value="2.0">KCC 2.0t</option>
+            <option value="2.2">KCC 2.2t</option>
+            <option value="2.7">KCC 2.7t</option>
+            <option value="3.2">KCC 3.2t</option>
+            <option value="4.5">KCC 4.5t</option>
+            <option value="5.0">KCC 5.0t</option>
+        </select>
+        <p class="info-text" id="flooringArea">장판 면적: 0평</p>
+        <p class="info-text" id="flooringPrice">장판 가격: 0원</p>
+    </div>
+    
+    <div class="result-row">
+        <span>도배: <span id="totalWallpaper">0</span>원</span>
+        <span>장판: <span id="totalFlooring">0</span>원</span>
+        <span class="total">총합: <span id="grandTotal">0</span>원</span>
+    </div>
+    
+    <!-- Modal for custom settings -->
+    <div id="customModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>맞춤 설정</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            
+            <div class="modal-section">
+                <h3>설정 이름</h3>
+                <input type="text" id="settingName" placeholder="맞춤 설정 이름">
+            </div>
+            
+            <div class="modal-section">
+                <h3>벽지 단가</h3>
+                <div class="form-row">
+                    <div>
+                        <label>소폭 (원/평)</label>
+                        <input type="number" id="customSmallPrice" value="3500">
+                    </div>
+                    <div>
+                        <label>장폭 (원/평)</label>
+                        <input type="number" id="customWidePrice" value="4700">
+                    </div>
+                    <div>
+                        <label>실크 (원/평)</label>
+                        <input type="number" id="customSilkPrice" value="8000">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-section">
+                <h3>인건비</h3>
+                <div class="form-row">
+                    <div>
+                        <label>1품</label>
+                        <input type="number" id="customFullDayCost" value="240000">
+                    </div>
+                    <div>
+                        <label>반품</label>
+                        <input type="number" id="customHalfDayCost" value="170000">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-section">
+                <h3>부자재</h3>
+                <div class="form-row">
+                    <div>
+                        <label>합지 (원/평)</label>
+                        <input type="number" id="customPaperMaterial" value="650">
+                    </div>
+                    <div>
+                        <label>실크 (원/평)</label>
+                        <input type="number" id="customSilkMaterial" value="3900">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-section">
+                <h3>장판 단가</h3>
+                <div class="form-row">
+                    <div>
+                        <label>KCC 1.8t (원/평)</label>
+                        <input type="number" id="custom18t" value="38000">
+                    </div>
+                    <div>
+                        <label>KCC 2.0t (원/평)</label>
+                        <input type="number" id="custom20t" value="48000">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>KCC 2.2t (원/평)</label>
+                        <input type="number" id="custom22t" value="58000">
+                    </div>
+                    <div>
+                        <label>KCC 2.7t (원/평)</label>
+                        <input type="number" id="custom27t" value="82000">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>KCC 3.2t (원/평)</label>
+                        <input type="number" id="custom32t" value="95000">
+                    </div>
+                    <div>
+                        <label>KCC 4.5t (원/평)</label>
+                        <input type="number" id="custom45t" value="99000">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>KCC 5.0t (원/평)</label>
+                        <input type="number" id="custom50t" value="110000">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="cancel-btn">취소</button>
+                <button class="save-btn">저장</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    // 기본 가격 설정
+    const defaultPrices = {
+        wallpaper: {
+            small: 3500,   // 소폭
+            wide: 4700,    // 장폭
+            silk: 8000     // 실크
+        },
+        labor: {
+            fullDay: 240000,  // 1품
+            halfDay: 170000   // 반품
+        },
+        material: {
+            paper: 650,    // 합지 부자재
+            silk: 3900     // 실크 부자재
+        },
+        flooring: {
+            "1.8": 38000,  // KCC 1.8t
+            "2.0": 48000,  // KCC 2.0t
+            "2.2": 58000,  // KCC 2.2t
+            "2.7": 82000,  // KCC 2.7t
+            "3.2": 95000,  // KCC 3.2t
+            "4.5": 99000,  // KCC 4.5t
+            "5.0": 110000  // KCC 5.0t
+        }
+    };
+
+    // 사용할 가격 설정 (기본값 또는 맞춤설정)
+    let currentPrices = JSON.parse(JSON.stringify(defaultPrices));
+
+    // 맞춤설정 저장 목록
+    let customSettings = [];
+
+    // 벽지 소요량 정의
+    const wallpaperRequirements = {
+        "13": { living: 15, room: 20 },
+        "15": { living: 15, room: 25 },
+        "18": { living: 20, room: 25 },
+        "19": { living: 20, room: 30 },
+        "22": { living: 25, room: 30 },
+        "24": { living: 30, room: 35 },
+        "25": { living: 25, room: 40 },
+        "28": { living: 30, room: 40 },
+        "32": { living: 35, room: 45 },
+        "34": { living: 35, room: 50 },
+        "38": { living: 40, room: 55 },
+        "42": { living: 45, room: 60 },
+        "45": { living: 45, room: 70 },
+        "50": { living: 50, room: 75 },
+        "55": { living: 55, room: 85 },
+        "60": { living: 60, room: 90 },
+        "65": { living: 65, room: 100 },
+        "70": { living: 70, room: 105 }
+    };
+
+    // 평형별 전용면적 정의
+    const flooringAreas = {
+        "13": 10,
+        "15": 11,
+        "18": 13.5,
+        "19": 14,
+        "22": 16.5,
+        "24": 18,
+        "25": 18.5,
+        "28": 21,
+        "32": 24,
+        "34": 25.5,
+        "38": 28.5,
+        "42": 31.5,
+        "45": 33.5,
+        "50": 37.5,
+        "55": 41,
+        "60": 45,
+        "65": 48.5,
+        "70": 52.5
+    };
+
+    // 인건비 계산 로직 (32평 인건비만 수정)
+    function calculateLaborCost(houseSize, livingType, roomType) {
+        if (!houseSize || !livingType || !roomType) return 0;
+        
+        // livingType, roomType이 1 또는 2면 합지, 3이면 실크
+        const isLivingPaper = livingType < 3;
+        const isRoomPaper = roomType < 3;
+        
+        // 방=합지시공, 거실=합지시공
+        if (isRoomPaper && isLivingPaper) {
+            const laborData = {
+                "13": [1, 0],
+                "15": [1, 0],
+                "18": [1, 0],
+                "19": [1, 1],
+                "22": [2, 0],
+                "24": [2, 0],
+                "25": [2, 0],
+                "28": [2, 0],
+                "32": [3, 0], // 32평 인건비를 3품으로 변경
+                "34": [3, 0],
+                "38": [3, 0],
+                "42": [3, 1],
+                "45": [4, 0],
+                "50": [4, 0],
+                "55": [5, 0],
+                "60": [5, 0],
+                "65": [6, 0],
+                "70": [6, 0]
+            };
+            
+            if (laborData[houseSize]) {
+                return currentPrices.labor.fullDay * laborData[houseSize][0] + 
+                        currentPrices.labor.halfDay * laborData[houseSize][1];
+            }
+        }
+        
+        // 방=실크시공, 거실=합지시공 또는 방=합지시공, 거실=실크시공
+        if ((isRoomPaper && !isLivingPaper) || (!isRoomPaper && isLivingPaper)) {
+            const laborData = {
+                "13": [2, 0],
+                "15": [2, 0],
+                "18": [2, 0],
+                "19": [2, 0],
+                "22": [2, 1],
+                "24": [2, 1],
+                "25": [3, 0],
+                "28": [3, 1],
+                "32": [3, 1],
+                "34": [4, 0],
+                "38": [4, 1],
+                "42": [5, 0],
+                "45": [5, 1],
+                "50": [6, 0],
+                "55": [6, 1],
+                "60": [7, 0],
+                "65": [8, 0],
+                "70": [8, 0]
+            };
+            
+            if (laborData[houseSize]) {
+                return currentPrices.labor.fullDay * laborData[houseSize][0] + 
+                        currentPrices.labor.halfDay * laborData[houseSize][1];
+            }
+        }
+        
+        // 방=실크시공, 거실=실크시공
+        if (!isRoomPaper && !isLivingPaper) {
+            // 일반 실크 시공
+            if (roomType === "3" && livingType === "3") {
+                const laborData = {
+                    "13": [2, 0],
+                    "15": [2, 0],
+                    "18": [2, 1],
+                    "19": [2, 1],
+                    "22": [3, 0],
+                    "24": [3, 0],
+                    "25": [3, 0],
+                    "28": [4, 0],
+                    "32": [4, 0],
+                    "34": [4, 1],
+                    "38": [5, 0],
+                    "42": [6, 1],
+                    "45": [7, 0],
+                    "50": [8, 0],
+                    "55": [9, 0],
+                    "60": [10, 0],
+                    "65": [10, 0],
+                    "70": [11, 0]
+                };
+                
+                if (laborData[houseSize]) {
+                    return currentPrices.labor.fullDay * laborData[houseSize][0] + 
+                        currentPrices.labor.halfDay * laborData[houseSize][1];
+                }
+            }
+        }
+        
+        return 0;
+    }
+
+    // 부자재 비용 계산
+    function calculateMaterialCost(houseSize, livingType, roomType) {
+        if (!houseSize || !livingType || !roomType) return 0;
+        
+        const livingArea = wallpaperRequirements[houseSize]?.living || 0;
+        const roomArea = wallpaperRequirements[houseSize]?.room || 0;
+        
+        // 합지 또는 실크 여부
+        const isLivingPaper = livingType < 3;
+        const isRoomPaper = roomType < 3;
+        
+        const livingMaterialPrice = isLivingPaper ? currentPrices.material.paper : currentPrices.material.silk;
+        const roomMaterialPrice = isRoomPaper ? currentPrices.material.paper : currentPrices.material.silk;
+        
+        return (livingArea * livingMaterialPrice) + (roomArea * roomMaterialPrice);
+    }
+
+    // 벽지 가격 계산
+    function calculateWallpaperPrice(houseSize, livingType, roomType) {
+        if (!houseSize || !livingType || !roomType) return 0;
+        
+        const livingArea = wallpaperRequirements[houseSize]?.living || 0;
+        const roomArea = wallpaperRequirements[houseSize]?.room || 0;
+        
+        let livingPrice = 0;
+        let roomPrice = 0;
+        
+        // 거실 벽지 가격
+        if (livingType === "1") livingPrice = currentPrices.wallpaper.small;
+        else if (livingType === "2") livingPrice = currentPrices.wallpaper.wide;
+        else if (livingType === "3") livingPrice = currentPrices.wallpaper.silk;
+        
+        // 방 벽지 가격
+        if (roomType === "1") roomPrice = currentPrices.wallpaper.small;
+        else if (roomType === "2") roomPrice = currentPrices.wallpaper.wide;
+        else if (roomType === "3") roomPrice = currentPrices.wallpaper.silk;
+        
+        return (livingArea * livingPrice) + (roomArea * roomPrice);
+    }
+
+    // 장판 가격 계산
+    function calculateFlooringPrice(houseSize, flooringType) {
+        if (!houseSize || !flooringType) return 0;
+        
+        const area = flooringAreas[houseSize] || 0;
+        const price = currentPrices.flooring[flooringType] || 0;
+        
+        return area * price;
+    }
+
+    // 사용자 입력값 가져오기
+    function getInputValues() {
+        const houseSize = document.getElementById("houseSize").value;
+        const livingWallpaper = document.getElementById("livingWallpaper").value;
+        const roomWallpaper = document.getElementById("roomWallpaper").value;
+        const extraCost = parseInt(document.getElementById("extraCost").value || 0);
+        const flooringType = document.getElementById("flooringType").value;
+        
+        return { houseSize, livingWallpaper, roomWallpaper, extraCost, flooringType };
+    }
+
+    // 결과 업데이트
+    function updateResults() {
+        console.log("결과 업데이트 함수 호출됨");
+        const { houseSize, livingWallpaper, roomWallpaper, extraCost, flooringType } = getInputValues();
+        
+        // 벽지 면적 표시
+        document.getElementById("livingArea").textContent = `거실 벽지 면적: ${wallpaperRequirements[houseSize]?.living || 0}평`;
+        document.getElementById("roomArea").textContent = `방 벽지 면적: ${wallpaperRequirements[houseSize]?.room || 0}평`;
+        
+        // 장판 면적 표시
+        document.getElementById("flooringArea").textContent = `장판 면적: ${flooringAreas[houseSize] || 0}평`;
+        
+        // 벽지 가격
+        const wallpaperPrice = calculateWallpaperPrice(houseSize, livingWallpaper, roomWallpaper);
+        document.getElementById("wallpaperPrice").textContent = `${wallpaperPrice.toLocaleString()}원`;
+        
+        // 인건비
+        const laborCost = calculateLaborCost(houseSize, livingWallpaper, roomWallpaper);
+        document.getElementById("laborCost").textContent = `${laborCost.toLocaleString()}원`;
+        
+        // 부자재
+        const materialCost = calculateMaterialCost(houseSize, livingWallpaper, roomWallpaper);
+        document.getElementById("materialCost").textContent = `${materialCost.toLocaleString()}원`;
+
+        // 장판 가격
+        const flooringPrice = calculateFlooringPrice(houseSize, flooringType);
+        document.getElementById("flooringPrice").textContent = `장판 가격: ${flooringPrice.toLocaleString()}원`;
+
+        // 총 도배 가격 (벽지 가격 + 인건비 + 부자재 + 기타비용)
+        const totalWallpaper = wallpaperPrice + laborCost + materialCost + extraCost;
+        document.getElementById("totalWallpaper").textContent = totalWallpaper.toLocaleString();
+
+        // 총 장판 가격
+        document.getElementById("totalFlooring").textContent = flooringPrice.toLocaleString();
+
+        // 총합계 (도배 + 장판)
+        const grandTotal = totalWallpaper + flooringPrice;
+        document.getElementById("grandTotal").textContent = grandTotal.toLocaleString();
+        }
+
+        // 모달 열기
+        function openModal() {
+            document.getElementById("customModal").style.display = "block";
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById("customModal").style.display = "none";
+        }
+
+        // 맞춤설정 삭제
+        function deleteCustomSetting() {
+            const selectedValue = document.getElementById("customSetting").value;
+            
+            // 기본값은 삭제할 수 없음
+            if (selectedValue === "default") {
+                alert("기본값은 삭제할 수 없습니다.");
+                return;
+            }
+            
+            const index = parseInt(selectedValue);
+            if (!isNaN(index) && customSettings[index]) {
+                const settingName = customSettings[index].name;
+                
+                // 삭제 확인
+                if (confirm(`'${settingName}' 설정을 삭제하시겠습니까?`)) {
+                    // 배열에서 설정 제거
+                    customSettings.splice(index, 1);
+                    
+                    // 로컬 스토리지 업데이트
+                    localStorage.setItem('wallpaperFlooringCustomSettings', JSON.stringify(customSettings));
+                    
+                    // 드롭다운 업데이트
+                    updateCustomSettingsDropdown();
+                    
+                    // 기본값으로 변경
+                    document.getElementById("customSetting").value = "default";
+                    applyCustomSetting();
+                    
+                    alert(`'${settingName}' 설정이 삭제되었습니다.`);
+                }
+            }
+        }
+
+        // 맞춤설정 저장
+        function saveCustomSetting() {
+            const name = document.getElementById("settingName").value.trim();
+            if (!name) {
+                alert("맞춤설정 이름을 입력해주세요.");
+                return;
+            }
+            
+            // 같은 이름의 설정이 있는지 확인
+            const existingIndex = customSettings.findIndex(s => s.name === name);
+            if (existingIndex !== -1) {
+                // 확인 메시지 표시
+                if (!confirm(`'${name}' 설정이 이미 존재합니다. 덮어쓰시겠습니까?`)) {
+                    return; // 취소 선택 시 함수 종료
+                }
+                // 여기까지 코드가 실행된다면 사용자가 '확인'을 선택한 것
+            }
+            
+            // 새 설정 생성
+            const newSetting = {
+                name: name,
+                prices: {
+                    wallpaper: {
+                        small: parseInt(document.getElementById("customSmallPrice").value) || defaultPrices.wallpaper.small,
+                        wide: parseInt(document.getElementById("customWidePrice").value) || defaultPrices.wallpaper.wide,
+                        silk: parseInt(document.getElementById("customSilkPrice").value) || defaultPrices.wallpaper.silk
+                    },
+                    labor: {
+                        fullDay: parseInt(document.getElementById("customFullDayCost").value) || defaultPrices.labor.fullDay,
+                        halfDay: parseInt(document.getElementById("customHalfDayCost").value) || defaultPrices.labor.halfDay
+                    },
+                    material: {
+                        paper: parseInt(document.getElementById("customPaperMaterial").value) || defaultPrices.material.paper,
+                        silk: parseInt(document.getElementById("customSilkMaterial").value) || defaultPrices.material.silk
+                    },
+                    flooring: {
+                        "1.8": parseInt(document.getElementById("custom18t").value) || defaultPrices.flooring["1.8"],
+                        "2.0": parseInt(document.getElementById("custom20t").value) || defaultPrices.flooring["2.0"],
+                        "2.2": parseInt(document.getElementById("custom22t").value) || defaultPrices.flooring["2.2"],
+                        "2.7": parseInt(document.getElementById("custom27t").value) || defaultPrices.flooring["2.7"],
+                        "3.2": parseInt(document.getElementById("custom32t").value) || defaultPrices.flooring["3.2"],
+                        "4.5": parseInt(document.getElementById("custom45t").value) || defaultPrices.flooring["4.5"],
+                        "5.0": parseInt(document.getElementById("custom50t").value) || defaultPrices.flooring["5.0"]
+                    }
+                }
+            };
+            
+            try {
+                // 같은 이름의 설정이 있으면 덮어쓰기, 없으면 추가
+                if (existingIndex !== -1) {
+                    customSettings[existingIndex] = newSetting;
+                } else {
+                    customSettings.push(newSetting);
+                }
+                
+                // 로컬 스토리지에 저장
+                localStorage.setItem('wallpaperFlooringCustomSettings', JSON.stringify(customSettings));
+                
+                // 드롭다운 업데이트
+                updateCustomSettingsDropdown();
+                
+                // 모달 닫기
+                closeModal();
+                
+                // 현재 맞춤설정 선택
+                document.getElementById("customSetting").value = existingIndex !== -1 ? existingIndex : customSettings.length - 1;
+                
+                // 선택된 맞춤설정 적용
+                applyCustomSetting();
+            } catch (error) {
+                console.error("맞춤설정 저장 오류:", error);
+                alert("맞춤설정을 저장하는 중 오류가 발생했습니다.");
+            }
+        }
+
+        // 맞춤설정 드롭다운 업데이트
+        function updateCustomSettingsDropdown() {
+            try {
+                const dropdown = document.getElementById('customSetting');
+                // 기존 옵션 제거 (기본값 옵션 제외)
+                while (dropdown.options.length > 1) {
+                    dropdown.remove(1);
+                }
+                
+                // 저장된 맞춤설정 옵션 추가
+                customSettings.forEach((setting, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = setting.name;
+                    dropdown.appendChild(option);
+                });
+            } catch (error) {
+                console.error("드롭다운 업데이트 오류:", error);
+            }
+        }
+
+        // 로컬 스토리지에서 맞춤설정 불러오기
+        function loadCustomSettings() {
+            try {
+                const saved = localStorage.getItem('wallpaperFlooringCustomSettings');
+                if (saved) {
+                    customSettings = JSON.parse(saved);
+                    updateCustomSettingsDropdown();
+                }
+            } catch (error) {
+                console.error("로컬 스토리지 읽기 오류:", error);
+            }
+        }
+
+        // 맞춤설정 적용
+        function applyCustomSetting() {
+            const selectedValue = document.getElementById("customSetting").value;
+            
+            if (selectedValue === "default") {
+                // 기본값 적용
+                currentPrices = JSON.parse(JSON.stringify(defaultPrices));
+            } else {
+                // 선택된 맞춤설정 적용
+                const index = parseInt(selectedValue);
+                if (!isNaN(index) && customSettings[index]) {
+                    currentPrices = JSON.parse(JSON.stringify(customSettings[index].prices));
+                }
+            }
+            
+            // 결과 업데이트
+            updateResults();
+        }
+
+        // 이벤트 리스너 직접 설정
+        document.getElementById("houseSize").onchange = updateResults;
+        document.getElementById("livingWallpaper").onchange = updateResults;
+        document.getElementById("roomWallpaper").onchange = updateResults;
+        document.getElementById("extraCost").oninput = updateResults;
+        document.getElementById("flooringType").onchange = updateResults;
+
+        document.getElementById("customSetting").onchange = applyCustomSetting;
+        document.getElementById("createCustomBtn").onclick = openModal;
+        document.getElementById("deleteCustomBtn").onclick = deleteCustomSetting;
+        document.querySelector(".close-modal").onclick = closeModal;
+        document.querySelector(".cancel-btn").onclick = closeModal;
+        document.querySelector(".save-btn").onclick = saveCustomSetting;
+
+        // 초기 설정 로드
+        try {
+            loadCustomSettings();
+            console.log("초기 설정 로드 완료");
+        } catch (error) {
+            console.error("초기 설정 로드 오류:", error);
+        }
+        </script>
