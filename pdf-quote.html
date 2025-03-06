@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="format-detection" content="telephone=no, email=no, address=no, date=no">
     <title>도배장판 견적서</title>
     <link rel="stylesheet" href="styles.css">
@@ -13,14 +13,14 @@
         * {
             box-sizing: border-box;
             font-family: 'Noto Sans KR', sans-serif;
-            font-size: 90%; /* 기본 글꼴의 90%로 변경 */
-            line-height: 1.3; /* 줄 간격 조정 */
+            font-size: 100%; /* 기본 글꼴 크기로 변경 */
+            line-height: 1.4; /* 줄 간격 조정 */
         }
         
         /* 입력 필드 폰트 일관성 유지 */
         input, textarea, select, .editable {
             font-family: 'Noto Sans KR', sans-serif;
-            font-size: 90% !important;
+            font-size: 100% !important;
         }
         
         body {
@@ -214,7 +214,7 @@
             max-width: 100%; /* 로고 너비 100%로 설정 */
             max-height: 100px;
             object-fit: contain;
-            margin-right: 0;
+            margin-left: 10%; /* 좌측에서 10% 띄우기 */
             vertical-align: middle; /* 상하 가운데 정렬 */
         }
         
@@ -270,14 +270,14 @@
         /* 품목 칸을 더 넓게 */
         .quote-table th:nth-child(1),
         .quote-table td:nth-child(1) {
-            width: 50%; /* 화면의 1/2 */
+            width: 30%; /* 화면의 1/2 */
             text-align: left;
         }
         
         /* 수량 칸 너비 줄이기 */
         .quote-table th:nth-child(2),
         .quote-table td:nth-child(2) {
-            width: 10%; /* 2/10 */
+            width: 20%; /* 2/10 */
             text-align: center;
         }
         
@@ -305,19 +305,19 @@
         /* 미리보기 모드의 테이블 열 너비 설정 */
         #quote-preview .quote-table th:nth-child(1),
         #quote-preview .quote-table td:nth-child(1) {
-            width: 50%; /* 화면의 1/2 */
+            width: 30%; /* 화면의 30% */
             text-align: left;
-        }
-
-        #quote-preview .quote-table th:nth-child(2),
-        #quote-preview .quote-table td:nth-child(2) {
-            width: 10%; /* 2/10 */
-            text-align: center;
         }
 
         #quote-preview .quote-table th:nth-child(3),
         #quote-preview .quote-table td:nth-child(3) {
-            width: 20%; /* 4/10 */
+            width: 20%; /* 20% */
+            text-align: right;
+        }
+
+        #quote-preview .quote-table th:nth-child(4),
+        #quote-preview .quote-table td:nth-child(4) {
+            width: 20%; /* 20% */
             text-align: right;
         }
 
@@ -530,6 +530,136 @@
             font-size: 110%;
         }
         
+        /* 접을 수 있는 영역 스타일 */
+        .collapsible {
+            cursor: pointer;
+            width: 100%;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-weight: bold;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+
+        .collapsible:after {
+            content: '\002B'; /* + 기호 */
+            color: #777;
+            font-weight: bold;
+            float: right;
+        }
+
+        .active:after {
+            content: "\2212"; /* - 기호 */
+        }
+
+        .collapsible-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            background-color: #f5f5f5;
+        }
+
+        /* 견적서 보관함 모달 스타일 */
+        .archive-list-mobile {
+            width: 100%;
+            background-color: #fff;
+        }
+
+        .archive-item {
+            display: block;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+        }
+
+        .archive-item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .archive-item-number {
+            display: inline-block;
+            color: #4a6da7;
+            font-weight: bold;
+        }
+
+        .archive-item-date {
+            color: #666;
+            text-align: right;
+        }
+
+        .archive-item-content {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .archive-item-amount {
+            display: block;
+            text-align: right;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .archive-load-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #4a6da7;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+
+        .archive-modal-mobile {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .archive-modal-header {
+            position: sticky;
+            top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #4a6da7;
+            color: white;
+            z-index: 10;
+        }
+
+        .archive-modal-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .archive-modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .archive-modal-body {
+            padding: 0;
+            overflow-y: auto;
+            height: calc(100% - 60px);
+        }
+
         /* PDF 출력용 설정 */
         @media print {
             body {
@@ -587,44 +717,6 @@
         
         <!-- 수정 모드 화면 -->
         <div class="edit-mode">
-            <div class="controls-container">
-                <h3>업체 정보 설정</h3>
-                <div class="control-group">
-                    <label for="company-selection">업체 선택:</label>
-                    <select id="company-selection">
-                        <option value="youngman">청년도배</option>
-                        <option value="flowwall">플로우월</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label for="company-logo">업체 로고:</label>
-                    <div class="file-upload">
-                        <input type="file" id="company-logo-upload" accept="image/*">
-                        <img id="company-logo-preview" class="uploaded-image-preview" style="display: none;">
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label for="company-name">업체명:</label>
-                    <input type="text" id="company-name" value="청년도배">
-                </div>
-                <div class="control-group">
-                    <label for="company-registration">사업자등록번호:</label>
-                    <input type="text" id="company-registration" value="334-07-02064">
-                </div>
-                <div class="control-group">
-                    <label for="company-phone">대표 연락처:</label>
-                    <input type="text" id="company-phone" value="01073076347">
-                </div>
-                <div class="control-group">
-                    <label for="company-email">이메일:</label>
-                    <input type="text" id="company-email" value="foryou600@gmail.com">
-                </div>
-                <div class="control-group">
-                    <label for="company-address">주소:</label>
-                    <input type="text" id="company-address" value="전북특별자치도 전주시 덕구 솔내2길 74-5, 1층 101호">
-                </div>
-            </div>
-
             <div class="controls-container">
                 <h3>견적서 정보 설정</h3>
                 <div class="control-group">
@@ -687,32 +779,74 @@
                     <textarea id="extra-notes" rows="2" placeholder="필요시 추가 내용을 입력하세요"></textarea>
                 </div>
             </div>
+            
+            <button class="collapsible">업체 정보 설정</button>
+            <div class="collapsible-content">
+                <div class="controls-container" style="margin-top: 0;">
+                    <div class="control-group">
+                        <label for="company-selection">업체 선택:</label>
+                        <select id="company-selection">
+                            <option value="youngman">청년도배</option>
+                            <option value="flowwall">플로우월</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="company-logo">업체 로고:</label>
+                        <div class="file-upload">
+                            <input type="file" id="company-logo-upload" accept="image/*">
+                            <img id="company-logo-preview" class="uploaded-image-preview" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="company-name">업체명:</label>
+                        <input type="text" id="company-name" value="청년도배">
+                    </div>
+                    <div class="control-group">
+                        <label for="company-registration">사업자등록번호:</label>
+                        <input type="text" id="company-registration" value="334-07-02064">
+                    </div>
+                    <div class="control-group">
+                        <label for="company-phone">대표 연락처:</label>
+                        <input type="text" id="company-phone" value="01073076347">
+                    </div>
+                    <div class="control-group">
+                        <label for="company-email">이메일:</label>
+                        <input type="text" id="company-email" value="foryou600@gmail.com">
+                    </div>
+                    <div class="control-group">
+                        <label for="company-address">주소:</label>
+                        <input type="text" id="company-address" value="전북특별자치도 전주시 덕구 솔내2길 74-5, 1층 101호">
+                    </div>
+                </div>
+            </div>
 
-            <div class="controls-container">
-                <h3>비고 정보</h3>
-                <div class="control-group">
-                    <label for="payment-terms">결제 조건:</label>
-                    <textarea id="payment-terms" rows="2">계약금 계약시 10% 공사완료시 90% 지급을 원칙으로 합니다.</textarea>
-                </div>
-                <div class="control-group">
-                    <label for="bank-info">입금 계좌:</label>
-                    <input type="text" id="bank-info" value="카카오뱅크 3333-15-2412225 박한성">
-                </div>
-                <div class="control-group">
-                    <label for="warranty-info">하자보수:</label>
-                    <textarea id="warranty-info" rows="2">시공 후 6개월 이내에 발생한 하자 보수에 관해서 무상 A/S 해드립니다.
-단 고객님 부주의나 기타 다른 사항에 따른 A/S 방생 시 금액이 청구 될 수 있습니다.</textarea>
-                </div>
-                <div class="control-group">
-                    <label for="notes">참고 사항:</label>
-                    <textarea id="notes" rows="2">합리적인 가격과 고품질 시공을 약속합니다.
-도배 장판 전문시공팀 "청년도배"</textarea>
-                </div>
-                <div class="control-group">
-                    <label for="signature-upload">서명 이미지:</label>
-                    <div class="file-upload">
-                        <input type="file" id="signature-upload" accept="image/*">
-                        <img id="signature-preview" class="uploaded-image-preview" style="display: none;">
+            <button class="collapsible">비고 정보</button>
+            <div class="collapsible-content">
+                <div class="controls-container" style="margin-top: 0;">
+                    <div class="control-group">
+                        <label for="payment-terms">결제 조건:</label>
+                        <textarea id="payment-terms" rows="2">계약금 계약시 10% 공사완료시 90% 지급을 원칙으로 합니다.</textarea>
+                    </div>
+                    <div class="control-group">
+                        <label for="bank-info">입금 계좌:</label>
+                        <input type="text" id="bank-info" value="카카오뱅크 3333-15-2412225 박한성">
+                    </div>
+                    <div class="control-group">
+                        <label for="warranty-info">하자보수:</label>
+                        <textarea id="warranty-info" rows="2">시공 후 6개월 이내에 발생한 하자 보수에 관해서 무상 A/S 해드립니다.
+        단 고객님 부주의나 기타 다른 사항에 따른 A/S 방생 시 금액이 청구 될 수 있습니다.</textarea>
+                    </div>
+                    <div class="control-group">
+                        <label for="notes">참고 사항:</label>
+                        <textarea id="notes" rows="2">합리적인 가격과 고품질 시공을 약속합니다.
+        도배 장판 전문시공팀 "청년도배"</textarea>
+                    </div>
+                    <div class="control-group">
+                        <label for="signature-upload">서명 이미지:</label>
+                        <div class="file-upload">
+                            <input type="file" id="signature-upload" accept="image/*">
+                            <img id="signature-preview" class="uploaded-image-preview" style="display: none;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1702,55 +1836,39 @@
                 return;
             }
             
-            // 모달 컨텐츠 생성
-            let modalHtml = `
-                <div id="archiveModal" class="modal">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2>견적서 보관함</h2>
-                            <button class="close-modal">&times;</button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="archive-list">
-                                <table class="archive-table">
-                                    <thead>
-                                        <tr>
-                                            <th>번호</th>
-                                            <th>날짜</th>
-                                            <th>고객/현장</th>
-                                            <th>금액</th>
-                                            <th>작업</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-            `;
-            
             // 견적서 목록 정렬 (최신순)
             quoteArchive.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
             
-            // 견적서 목록 추가
+            // 모달 컨텐츠 생성 (모바일 스타일)
+            let modalHtml = `
+                <div id="archiveModal" class="archive-modal-mobile">
+                    <div class="archive-modal-header">
+                        <h2>견적서</h2>
+                        <button class="archive-modal-close">&times;</button>
+                    </div>
+                    <div class="archive-modal-body">
+                        <div class="archive-list-mobile">
+            `;
+            
+            // 견적서 목록 추가 (모바일 스타일)
             for (const quote of quoteArchive) {
-                const quoteDate = new Date(quote.quoteDate).toLocaleDateString();
+                const quoteDate = new Date(quote.quoteDate);
+                const formattedDate = `${quoteDate.getFullYear()}. ${quoteDate.getMonth()+1}. ${quoteDate.getDate()}`;
+                const displayNumber = quote.quoteNumber.split('-').pop(); // 마지막 숫자만 표시
+                
                 modalHtml += `
-                    <tr>
-                        <td>${quote.quoteNumber}</td>
-                        <td>${quoteDate}</td>
-                        <td>${quote.customerName}</td>
-                        <td class="amount-col">${formatNumber(quote.totalAmount)}원</td>
-                        <td>
-                            <button class="btn-secondary load-quote" data-id="${quote.quoteNumber}">불러오기</button>
-                        </td>
-                    </tr>
+                    <div class="archive-item">
+                        <div class="archive-item-header">
+                            <span class="archive-item-date">${formattedDate}</span>
+                        </div>
+                        <span class="archive-item-content">${quote.customerName}</span>
+                        <span class="archive-item-amount">₩${formatNumber(quote.totalAmount)}</span>
+                        <button class="archive-load-btn" data-id="${quote.quoteNumber}">불러오기</button>
+                    </div>
                 `;
             }
             
             modalHtml += `
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="cancel-btn">닫기</button>
                         </div>
                     </div>
                 </div>
@@ -1767,24 +1885,19 @@
             
             // 모달 표시
             const modal = document.getElementById('archiveModal');
-            modal.style.display = 'block';
             
             // 이벤트 리스너 추가
-            modal.querySelector('.close-modal').addEventListener('click', () => {
-                modal.style.display = 'none';
-            });
-            
-            modal.querySelector('.cancel-btn').addEventListener('click', () => {
-                modal.style.display = 'none';
+            modal.querySelector('.archive-modal-close').addEventListener('click', () => {
+                modal.remove();
             });
             
             // 견적서 불러오기 버튼 이벤트
-            const loadButtons = modal.querySelectorAll('.load-quote');
+            const loadButtons = modal.querySelectorAll('.archive-load-btn');
             loadButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const quoteId = button.getAttribute('data-id');
                     loadQuoteFromArchive(quoteId);
-                    modal.style.display = 'none';
+                    modal.remove();
                 });
             });
         } catch (error) {
@@ -1825,6 +1938,25 @@
         const day = date.getDate().toString().padStart(2, '0');
         return `${year}/${month}/${day}`;
     }
+
+    // collapsible 영역 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+        // 기존 코드는 그대로 두고 마지막에 이 코드 추가
+        
+        // 접을 수 있는 영역 설정
+        const collapsibles = document.getElementsByClassName("collapsible");
+        for (let i = 0; i < collapsibles.length; i++) {
+            collapsibles[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                const content = this.nextElementSibling;
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        }
+    });
     </script>
 </body>
 </html>
