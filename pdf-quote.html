@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도배장판 견적서</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* 전체 스타일 */
+        * {
+            box-sizing: border-box;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 14px; /* 기본 글꼴의 80% 정도 크기 */
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+        }
+        
+        /* 공통 버튼 스타일 */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background-color: #76b852;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        /* 견적서 스타일 */
+        .quote-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            position: relative;
+        }
+        
+        @media (max-width: 768px) {
+            .quote-container {
+                transform: scale(0.8);
+                transform-origin: top left;
+                width: 125%; /* PC 화면처럼 보이도록 조정 */
+                max-width: none;
+            }
+        }
+        
+        .edit-mode, .preview-mode {
+            background-color: white;
+            margin-bottom: 20px;
+        }
+        
+        .preview-mode {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+        
+        /* 헤더 스타일 */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #76b852;
+            margin-bottom: 5px;
+        }
+        
+        /* 업체 선택 팝업 */
+        .company-select-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .company-select-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        .company-select-content h2 {
+            margin-top: 0;
+            color: #76b852;
+        }
+        
+        .company-options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        /* 견적서 헤더 */
+        .quote-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+        
+        .quote-company {
+            flex: 1;
+        }
+        
+        .quote-title-section {
+            flex: 1;
+            text-align: right;
+        }
+        
+        .quote-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .company-info {
+            text-align: right;
+            line-height: 1.5;
+        }
+        
+        .company-logo {
+            max-width: 150px;
+            max-height: 100px;
+            margin-bottom: 10px;
+        }
+        
+        .divider {
+            border-top: 2px solid #76b852;
+            margin: 20px 0;
+        }
+        
+        /* 견적서 정보 */
+        .quote-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .customer-info {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            flex: 1;
+        }
+        
+        .quote-details {
+            text-align: right;
+            flex: 1;
+        }
+        
+        /* 견적서 테이블 */
+        .quote-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .quote-table th {
+            background-color: #76b852;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .quote-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .quote-table .amount-col {
+            text-align: right;
+        }
+        
+        .quote-table tfoot td {
+            border-bottom: none;
+            text-align: right;
+            padding: 8px;
+        }
+        
+        .total-row {
+            font-weight: bold;
+            color: #76b852;
+        }
+        
+        /* 견적서 푸터 */
+        .quote-footer {
+            margin-top: 40px;
+        }
+        
+        .memo-section {
+            margin-bottom: 30px;
+        }
+        
+        .memo-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .memo-content {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .quote-signature {
+            text-align: right;
+            margin-top: 50px;
+        }
+        
+        /* 편집 모드 */
+        .controls-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .control-group label {
+            min-width: 120px;
+        }
+        
+        .control-group input, .control-group textarea {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .control-group textarea {
+            width: 100%;
+            min-height: 60px;
+        }
+        
+        .editable {
+            border: none;
+            background: none;
+            width: 100%;
+            outline: none;
+        }
+        
+        .editable:focus {
+            background-color: #f0f8ff;
+        }
+        
+        .btn-container {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            color: #333;
+            text-decoration: none;
+        }
+        
+        .item-controls {
+            display: flex;
+            gap: 5px;
+        }
+        
+        /* 파일 업로드 관련 */
+        .file-upload {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .uploaded-image-preview {
+            max-width: 100px;
+            max-height: 60px;
+            margin-left: 10px;
+        }
+    </style>
+    <script src="scripts.js" defer></script>
+</head>
+<body>
+    <div class="header">
+        <h1>도배장판 견적서</h1>
+        <p>ver250306</p>
+    </div>
+    
+    <!-- 업체 선택 팝업 -->
+    <div id="company-select-modal" class="company-select-modal">
+        <div class="company-select-content">
+            <h2>업체 선택</h2>
+            <p>견적서를 생성할 업체를 선택해주세요.</p>
+            <div class="company-options">
+                <button id="select-youngman" class="btn btn-primary">청년도배</button>
+                <button id="select-flowwall" class="btn btn-primary">플로우월</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="quote-container">
+        <a href="estimate.html" class="back-button">&larr; 견적 프로그램으로 돌아가기</a>
+        
+        <!-- 수정 모드 / 미리보기 전환 버튼 -->
+        <div class="btn-container">
+            <button id="edit-mode-btn" class="btn btn-primary">수정 모드</button>
+            <button id="preview-mode-btn" class="btn btn-secondary">최종 보기</button>
+            <button id="download-pdf-btn" class="btn btn-primary">PDF 다운로드</button>
+        </div>
+        
+        <!-- 수정 모드 화면 -->
+        <div class="edit-mode">
+            <div class="controls-container">
+                <h3>업체 정보 설정</h3>
+                <div class="control-group">
+                    <label for="company-selection">업체 선택:</label>
+                    <select id="company-selection">
+                        <option value="youngman">청년도배</option>
+                        <option value="flowwall">플로우월</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="company-logo">업체 로고:</label>
+                    <div class="file-upload">
+                        <input type="file" id="company-logo-upload" accept="image/*">
+                        <img id="company-logo-preview" class="uploaded-image-preview" style="display: none;">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="company-name">업체명:</label>
+                    <input type="text" id="company-name" value="청년도배">
+                </div>
+                <div class="control-group">
+                    <label for="company-registration">사업자등록번호:</label>
+                    <input type="text" id="company-registration" value="334-07-02064">
+                </div>
+                <div class="control-group">
+                    <label for="company-phone">대표 연락처:</label>
+                    <input type="text" id="company-phone" value="01073076347">
+                </div>
+                <div class="control-group">
+                    <label for="company-email">이메일:</label>
+                    <input type="text" id="company-email" value="foryou600@gmail.com">
+                </div>
+                <div class="control-group">
+                    <label for="company-address">주소:</label>
+                    <input type="text" id="company-address" value="전북특별자치도 전주시 덕구 솔내2길 74-5, 1층 101호">
+                </div>
+            </div>
+
+            <div class="controls-container">
+                <h3>견적서 정보 설정</h3>
+                <div class="control-group">
+                    <label for="quote-number">견적서 번호:</label>
+                    <input type="text" id="quote-number" value="21-320">
+                </div>
+                <div class="control-group">
+                    <label for="quote-date">견적 날짜:</label>
+                    <input type="date" id="quote-date">
+                </div>
+                <div class="control-group">
+                    <label for="customer-name">고객명/현장:</label>
+                    <input type="text" id="customer-name" placeholder="고객명 또는 현장 정보">
+                </div>
+            </div>
+
+            <div class="controls-container">
+                <h3>할인 및 부가세 설정</h3>
+                <div class="control-group">
+                    <label for="discount-percent">할인율 (%):</label>
+                    <input type="number" id="discount-percent" min="0" max="100" step="0.1" value="0">
+                </div>
+                <div class="control-group">
+                    <label for="discount-amount">할인 금액:</label>
+                    <input type="number" id="discount-amount" min="0" step="1000" value="0">
+                </div>
+                <div class="control-group">
+                    <label for="vat-apply">부가세 적용:</label>
+                    <input type="checkbox" id="vat-apply">
+                </div>
+            </div>
+
+            <div class="controls-container">
+                <h3>항목 관리</h3>
+                <table id="edit-items-table" class="quote-table">
+                    <thead>
+                        <tr>
+                            <th>품목</th>
+                            <th>수량</th>
+                            <th>가격</th>
+                            <th>금액</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="edit-items-body">
+                        <!-- 견적 항목이 여기에 추가됨 -->
+                    </tbody>
+                </table>
+                <button id="add-item-btn" class="btn btn-secondary">+ 항목 추가</button>
+            </div>
+
+            <div class="controls-container">
+                <h3>기타 항목</h3>
+                <div class="control-group">
+                    <label for="extra-notes">기타 내용:</label>
+                    <textarea id="extra-notes" rows="2" placeholder="필요시 기타 내용을 입력하세요"></textarea>
+                </div>
+            </div>
+
+            <div class="controls-container">
+                <h3>비고 정보</h3>
+                <div class="control-group">
+                    <label for="payment-terms">결제 조건:</label>
+                    <textarea id="payment-terms" rows="2">계약금 계약시 10% 공사완료시 90% 지급을 원칙으로 합니다.</textarea>
+                </div>
+                <div class="control-group">
+                    <label for="bank-info">입금 계좌:</label>
+                    <input type="text" id="bank-info" value="카카오뱅크 3333-15-2412225 박한성">
+                </div>
+                <div class="control-group">
+                    <label for="warranty-info">하자보수:</label>
+                    <textarea id="warranty-info" rows="2">시공 후 6개월 이내에 발생한 하자 보수에 관해서 무상 A/S 해드립니다.
+단 고객님 부주의나 기타 다른 사항에 따른 A/S 방생 시 금액이 청구 될 수 있습니다.</textarea>
+                </div>
+                <div class="control-group">
+                    <label for="notes">참고 사항:</label>
+                    <textarea id="notes" rows="2">합리적인 가격과 고품질 시공을 약속합니다.
+도배 장판 전문시공팀 "청년도배"</textarea>
+                </div>
+                <div class="control-group">
+                    <label for="signature-upload">서명 이미지:</label>
+                    <div class="file-upload">
+                        <input type="file" id="signature-upload" accept="image/*">
+                        <img id="signature-preview" class="uploaded-image-preview" style="display: none;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 미리보기 모드 (PDF 변환용) -->
+        <div id="quote-preview" class="preview-mode">
+            <div class="quote-header">
+                <div class="quote-company">
+                    <img id="preview-company-logo" src="" class="company-logo" style="display: none;" alt="회사 로고">
+                </div>
+                <div class="quote-title-section">
+                    <div class="quote-title">견적서</div>
+                    <div class="company-info">
+                        <div id="preview-company-name">청년도배</div>
+                        <div>사업자등록번호: <span id="preview-registration">334-07-02064</span></div>
+                        <div><span id="preview-phone">01073076347</span></div>
+                        <div><span id="preview-email">foryou600@gmail.com</span></div>
+                        <div><span id="preview-address">전북특별자치도 전주시 덕구 솔내2길 74-5, 1층 101호</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="quote-info">
+                <div class="customer-info">
+                    <div id="preview-customer">[고객명]<br>푸른 아름드리아파트 203동 702호 고객님</div>
+                </div>
+                <div class="quote-details">
+                    견적서 # <span id="preview-quote-number">21-320</span><br>
+                    작성일자: <span id="preview-quote-date">2024/08/27</span>
+                </div>
+            </div>
+
+            <table class="quote-table">
+                <thead>
+                    <tr>
+                        <th>품목</th>
+                        <th>수량</th>
+                        <th>가격</th>
+                        <th>금액</th>
+                    </tr>
+                </thead>
+                <tbody id="preview-items-body">
+                    <!-- 견적 항목이 여기에 추가됨 -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" style="text-align: right;"><strong>소계</strong></td>
+                        <td class="amount-col" id="preview-subtotal">₩1,200,000</td>
+                    </tr>
+                    <tr id="discount-row" style="display: none;">
+                        <td colspan="3" style="text-align: right;"><strong>할인</strong></td>
+                        <td class="amount-col" id="preview-discount">₩0</td>
+                    </tr>
+                    <tr id="vat-row" style="display: none;">
+                        <td colspan="3" style="text-align: right;"><strong>부가세 (10%)</strong></td>
+                        <td class="amount-col" id="preview-vat">₩120,000</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="3" style="text-align: right;"><strong>총 견적금액</strong></td>
+                        <td class="amount-col" id="preview-total">₩1,200,000</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div id="extra-notes-section" style="display: none;">
+                <div class="memo-section">
+                    <div class="memo-title">기타:</div>
+                    <div id="preview-extra-notes" class="memo-content"></div>
+                </div>
+            </div>
+
+            <div class="quote-footer">
+                <div class="memo-section">
+                    <div class="memo-title">[이용약관]</div>
+                    <div id="preview-payment-terms" class="memo-content">계약금 계약시 10% 공사완료시 90% 지급을 원칙으로 합니다.</div>
+                </div>
+                
+                <div class="memo-section">
+                    <div class="memo-title">[입금계좌]</div>
+                    <div id="preview-bank-info" class="memo-content">카카오뱅크 3333-15-2412225 박한성</div>
+                </div>
+                
+                <div class="memo-section">
+                    <div id="preview-notes" class="memo-content">합리적인 가격과 고품질 시공을 약속합니다.<br>
+                        도배 장판 전문시공팀 "청년도배"</div>
+                </div>
+                
+                <div class="memo-section">
+                    <div class="memo-title">[하자보수]</div>
+                    <div id="preview-warranty" class="memo-content">시공 후 6개월 이내에 발생한 하자 보수에 관해서 무상 A/S 해드립니다.<br>
+                        단 고객님 부주의나 기타 다른 사항에 따른 A/S 방생 시 금액이 청구 될 수 있습니다.</div>
+                </div>
+                
+                <div class="quote-signature">
+                    <img id="preview-signature" src="" style="display: none; max-width: 150px; max-height: 80px;">
+                    <div id="signature-line">
+                        <div id="preview-signature-date">2024/08/27</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 웹페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            // 현재 날짜 설정
+            const today = new Date();
+            const dateString = today.toISOString().split('T')[0];
+            document.getElementById('quote-date').value = dateString;
+            
+            // localStorage에서 업체 선택 상태 확인
+            const selectedCompany = localStorage.getItem('selectedCompany');
+            if (selectedCompany) {
+                document.getElementById('company-selection').value = selectedCompany;
+                updateCompanyInfo(selectedCompany);
+            }
+            
+            // localStorage에서 견적 데이터 불러오기
+            loadEstimateData();
+            
+            // 수정/미리보기 모드 전환 버튼
+            document.getElementById('edit-mode-btn').addEventListener('click', function() {
+                document.querySelector('.edit-mode').style.display = 'block';
+                document.querySelector('.preview-mode').style.display = 'none';
+                this.classList.add('btn-primary');
+                this.classList.remove('btn-secondary');
+                document.getElementById('preview-mode-btn').classList.add('btn-secondary');
+                document.getElementById('preview-mode-btn').classList.remove('btn-primary');
+            });
+            
+            document.getElementById('preview-mode-btn').addEventListener('click', function() {
+                updatePreview();
+                document.querySelector('.edit-mode').style.display = 'none';
+                document.querySelector('.preview-mode').style.display = 'block';
+                this.classList.add('btn-primary');
+                this.classList.remove('btn-secondary');
+                document.getElementById('edit-mode-btn').classList.add('btn-secondary');
+                document.getElementById('edit-mode-btn').classList.remove('btn-primary');
+            });
+            
+            // PDF 다운로드 버튼
+            document.getElementById('download-pdf-btn').addEventListener('click', downloadPdf);
+            
+            // 항목 추가 버튼
+            document.getElementById('add-item-btn').addEventListener('click', addNewItem);
+            
+            // 할인 및 부가세 이벤트 리스너
+            document.getElementById('discount-percent').addEventListener('input', function() {
+                // 할인율이 변경되면 할인 금액 자동 계산
+                calculateDiscount();
+            });
+            
+            document.getElementById('discount-amount').addEventListener('input', function() {
+                // 할인 금액이 직접 입력되면 할인율 0으로 설정
+                document.getElementById('discount-percent').value = '0';
+                updateTotals();
+            });
+            
+            document.getElementById('vat-apply').addEventListener('change', updateTotals);
+            
+            // 업체 선택 이벤트 리스너
+            document.getElementById('company-selection').addEventListener('change', function() {
+                const company = this.value;
+                updateCompanyInfo(company);
+                localStorage.setItem('selectedCompany', company);
+            });
+            
+            // 로고 이미지 업로드
+            document.getElementById('company-logo-upload').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const preview = document.getElementById('company-logo-preview');
+                        preview.src = event.target.result;
+                        preview.style.display = 'block';
+                        
+                        // 미리보기 로고도 업데이트
+                        const previewLogo = document.getElementById('preview-company-logo');
+                        previewLogo.src = event.target.result;
+                        previewLogo.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // 서명 이미지 업로드
+            document.getElementById('signature-upload').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const preview = document.getElementById('signature-preview');
+                        preview.src = event.target.result;
+                        preview.style.display = 'block';
+                        
+                        // 미리보기 서명도 업데이트
+                        const previewSignature = document.getElementById('preview-signature');
+                        previewSignature.src = event.target.result;
+                        previewSignature.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // 기타 내용 변경 시 이벤트
+            document.getElementById('extra-notes').addEventListener('input', function() {
+                const extraNotesSection = document.getElementById('extra-notes-section');
+                if (this.value.trim()) {
+                    extraNotesSection.style.display = 'block';
+                    document.getElementById('preview-extra-notes').innerHTML = this.value.replace(/\n/g, '<br>');
+                } else {
+                    extraNotesSection.style.display = 'none';
+                }
+            });
+        });
+        
+        // 업체 정보 업데이트
+        function updateCompanyInfo(company) {
+            if (company === 'youngman') {
+                // 청년도배 정보
+                document.getElementById('company-name').value = '청년도배';
+                document.getElementById('company-registration').value = '334-07-02064';
+                document.getElementById('company-phone').value = '01073076347';
+                document.getElementById('company-email').value = 'foryou600@gmail.com';
+                document.getElementById('company-address').value = '전북특별자치도 전주시 덕구 솔내2길 74-5, 1층 101호';
+                document.getElementById('notes').value = '합리적인 가격과 고품질 시공을 약속합니다.\n도배 장판 전문시공팀 "청년도배"';
+            } else if (company === 'flowwall') {
+                // 플로우월 정보
+                document.getElementById('company-name').value = '플로우월';
+                document.getElementById('company-registration').value = '123-45-67890';
+                document.getElementById('company-phone').value = '010-1234-5678';
+                document.getElementById('company-email').value = 'info@flowwall.com';
+                document.getElementById('company-address').value = '서울특별시 강남구 테헤란로 123, 8층 801호';
+                document.getElementById('notes').value = '고급 도배 솔루션 제공\n인테리어 벽지 전문기업 "플로우월"';
+            }
+        }
+        
+        // localStorage에서 견적 데이터 불러오기
+        function loadEstimateData() {
+            try {
+                const savedData = localStorage.getItem('wallpaperFlooringEstimateData');
+                if (!savedData) {
+                    // 기본 항목 추가
+                    addNewItem('도배 (장폭합지) 자재비 포함', 1, 720000);
+                    addNewItem('장판 (Kcc1.8t) 자재비 포함', 1, 480000);
+                    return;
+                }
+                
+                const data = JSON.parse(savedData);
+                
+                // 고객명/현장 설정
+                if (data.houseSize) {
+                    document.getElementById('customer-name').value = 
+                        `${data.houseSize}평형 현장`;
+                }
+                
+                // 도배 항목 추가
+                let livingType = "";
+                if (data.livingWallpaper === "1") livingType = "소폭";
+                else if (data.livingWallpaper === "2") livingType = "장폭";
+                else if (data.livingWallpaper === "3") livingType = "실크";
+                
+                let roomType = "";
+                if (data.roomWallpaper === "1") roomType = "소폭";
+                else if (data.roomWallpaper === "2") roomType = "장폭";
+                else if (data.roomWallpaper === "3") roomType = "실크";
+                
+                const wallpaperDesc = `도배 (${livingType}/${roomType}) 자재비 포함`;
+                addNewItem(wallpaperDesc, 1, data.totalWallpaper);
+                
+                // 장판 항목 추가
+                if (data.flooringType) {
+                    const flooringDesc = `장판 (Kcc${data.flooringType}t) 자재비 포함`;
+                    addNewItem(flooringDesc, 1, data.flooringPrice);
+                }
+                
+                // 견적 날짜 설정
+                if (data.createdAt) {
+                    const dateObj = new Date(data.createdAt);
+                    document.getElementById('quote-date').value = dateObj.toISOString().split('T')[0];
+                }
+                
+                // 미리보기 업데이트
+                updatePreview();
+            } catch (error) {
+                console.error('견적 데이터 로드 오류:', error);
+            }
+        }
+        
+        // 새 항목 추가
+        function addNewItem(description = '', quantity = 1, price = 0) {
+            const tbody = document.getElementById('edit-items-body');
+            const rowIndex = tbody.children.length;
+            
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" class="editable item-description" value="${description}"></td>
+                <td><input type="number" class="editable item-quantity" value="${quantity}" min="1"></td>
+                <td><input type="number" class="editable item-price" value="${price}" min="0"></td>
+                <td class="amount-col item-total">${formatCurrency(quantity * price)}</td>
+                <td>
+                    <div class="item-controls">
+                        <button class="btn-danger item-delete" data-row="${rowIndex}">삭제</button>
+                    </div>
+                </td>
+            `;
+            
+            tbody.appendChild(newRow);
+            
+            // 항목 변경 이벤트 리스너 추가
+            const inputs = newRow.querySelectorAll('.editable');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    updateItemTotal(newRow);
+                    updateTotals();
+                });
+            });
+            
+            // 삭제 버튼 이벤트 리스너
+            newRow.querySelector('.item-delete').addEventListener('click', function() {
+                tbody.removeChild(newRow);
+                updateTotals();
+            });
+            
+            updateTotals();
+        }
+        
+        // 항목 총액 업데이트
+        function updateItemTotal(row) {
+            const quantity = parseInt(row.querySelector('.item-quantity').value) || 0;
+            const price = parseInt(row.querySelector('.item-price').value) || 0;
+            const total = quantity * price;
+            
+            row.querySelector('.item-total').textContent = formatCurrency(total);
+        }
+        
+        // 할인 계산
+        function calculateDiscount() {
+            const discountPercent = parseFloat(document.getElementById('discount-percent').value) || 0;
+            const subtotal = calculateSubtotal();
+            
+            if (discountPercent > 0) {
+                const discountAmount = Math.round(subtotal * (discountPercent / 100));
+                document.getElementById('discount-amount').value = discountAmount;
+            }
+            
+            updateTotals();
+        }
+        
+        // 소계 계산
+        function calculateSubtotal() {
+            let subtotal = 0;
+            const rows = document.getElementById('edit-items-body').children;
+            
+            for (let i = 0; i < rows.length; i++) {
+                const quantity = parseInt(rows[i].querySelector('.item-quantity').value) || 0;
+                const price = parseInt(rows[i].querySelector('.item-price').value) || 0;
+                subtotal += quantity * price;
+            }
+            
+            return subtotal;
+        }
+        
+        // 총액 업데이트
+        function updateTotals() {
+            const subtotal = calculateSubtotal();
+            const discountAmount = parseInt(document.getElementById('discount-amount').value) || 0;
+            const applyVAT = document.getElementById('vat-apply').checked;
+            
+            let total = subtotal - discountAmount;
+            let vat = 0;
+            
+            if (applyVAT) {
+                vat = Math.round(total * 0.1);
+                total += vat;
+            }
+        }
+        
+        // 미리보기 화면 업데이트
+        function updatePreview() {
+            // 회사 정보
+            document.getElementById('preview-company-name').textContent = document.getElementById('company-name').value;
+            document.getElementById('preview-registration').textContent = document.getElementById('company-registration').value;
+            document.getElementById('preview-phone').textContent = document.getElementById('company-phone').value;
+            document.getElementById('preview-email').textContent = document.getElementById('preview-email').value;
+            document.getElementById('preview-address').textContent = document.getElementById('company-address').value;
+            
+            // 견적 정보
+            document.getElementById('preview-quote-number').textContent = document.getElementById('quote-number').value;
+            
+            const quoteDate = new Date(document.getElementById('quote-date').value);
+            document.getElementById('preview-quote-date').textContent = formatDate(quoteDate);
+            document.getElementById('preview-signature-date').textContent = formatDate(quoteDate);
+            
+            // 고객 정보
+            const customerName = document.getElementById('customer-name').value;
+            document.getElementById('preview-customer').innerHTML = `${customerName}`;
+            
+            // 항목 정보
+            const previewBody = document.getElementById('preview-items-body');
+            previewBody.innerHTML = '';
+            
+            const rows = document.getElementById('edit-items-body').children;
+            for (let i = 0; i < rows.length; i++) {
+                const description = rows[i].querySelector('.item-description').value;
+                const quantity = rows[i].querySelector('.item-quantity').value;
+                const price = parseInt(rows[i].querySelector('.item-price').value) || 0;
+                const total = quantity * price;
+                
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${description}</td>
+                    <td>${quantity}</td>
+                    <td class="amount-col">₩${formatNumber(price)}</td>
+                    <td class="amount-col">₩${formatNumber(total)}</td>
+                `;
+                
+                previewBody.appendChild(newRow);
+            }
+            
+            // 금액 계산
+            const subtotal = calculateSubtotal();
+            const discountAmount = parseInt(document.getElementById('discount-amount').value) || 0;
+            const applyVAT = document.getElementById('vat-apply').checked;
+            
+            document.getElementById('preview-subtotal').textContent = formatCurrency(subtotal);
+            
+            // 할인 표시
+            if (discountAmount > 0) {
+                document.getElementById('discount-row').style.display = '';
+                document.getElementById('preview-discount').textContent = formatCurrency(discountAmount);
+            } else {
+                document.getElementById('discount-row').style.display = 'none';
+            }
+            
+            // 부가세 표시
+            let total = subtotal - discountAmount;
+            let vat = 0;
+            
+            if (applyVAT) {
+                vat = Math.round(total * 0.1);
+                total += vat;
+                document.getElementById('vat-row').style.display = '';
+                document.getElementById('preview-vat').textContent = formatCurrency(vat);
+            } else {
+                document.getElementById('vat-row').style.display = 'none';
+            }
+            
+            document.getElementById('preview-total').textContent = formatCurrency(total);
+            
+            // 기타 항목 내용
+            const extraNotes = document.getElementById('extra-notes').value.trim();
+            if (extraNotes) {
+                document.getElementById('extra-notes-section').style.display = 'block';
+                document.getElementById('preview-extra-notes').innerHTML = extraNotes.replace(/\n/g, '<br>');
+            } else {
+                document.getElementById('extra-notes-section').style.display = 'none';
+            }
+            
+            // 비고 정보
+            document.getElementById('preview-payment-terms').innerHTML = 
+                document.getElementById('payment-terms').value.replace(/\n/g, '<br>');
+            document.getElementById('preview-bank-info').innerHTML = 
+                document.getElementById('bank-info').value;
+            document.getElementById('preview-notes').innerHTML = 
+                document.getElementById('notes').value.replace(/\n/g, '<br>');
+            document.getElementById('preview-warranty').innerHTML = 
+                document.getElementById('warranty-info').value.replace(/\n/g, '<br>');
+        }
+        
+        // PDF 다운로드
+        function downloadPdf() {
+            // 미리보기 모드로 전환
+            updatePreview();
+            document.querySelector('.edit-mode').style.display = 'none';
+            document.querySelector('.preview-mode').style.display = 'block';
+            
+            // PDF 생성 옵션
+            const element = document.getElementById('quote-preview');
+            const customerName = document.getElementById('customer-name').value || '견적서';
+            const dateStr = new Date().toISOString().slice(0, 10);
+            
+            const opt = {
+                margin: 10,
+                filename: `견적서_${customerName}_${dateStr}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            // PDF 생성 및 다운로드
+            html2pdf().set(opt).from(element).save().then(() => {
+                // 서버 저장 기능이 구현되면 여기에 추가 (현재는 주석 처리)
+                // saveToServer(customerName, dateStr);
+                
+                alert('PDF가 생성되었습니다. 서버 저장 기능은 추후 구현될 예정입니다.');
+            });
+        }
+        
+        // 서버에 저장하는 함수 (추후 서버 구현 시 활성화)
+        function saveToServer(customerName, dateStr) {
+            // 예시 코드 (실제 구현 시 수정 필요)
+            // const data = {
+            //     customerName: customerName,
+            //     quoteNumber: document.getElementById('quote-number').value,
+            //     quoteDate: dateStr,
+            //     // 기타 필요한 데이터
+            // };
+            // 
+            // fetch('/api/quotes', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(data)
+            // })
+            // .then(response => response.json())
+            // .then(result => {
+            //     console.log('서버 저장 성공:', result);
+            //     alert('견적서가 서버에 저장되었습니다.');
+            // })
+            // .catch(error => {
+            //     console.error('서버 저장 오류:', error);
+            //     alert('서버 저장 중 오류가 발생했습니다.');
+            // });
+        }
+        
+        // 금액 포맷 (1,000,000 형식)
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
+        // 통화 포맷 (₩1,000,000 형식)
+        function formatCurrency(num) {
+            return `₩${formatNumber(num)}`;
+        }
+        
+        // 날짜 포맷 (YYYY/MM/DD 형식)
+        function formatDate(date) {
+            if (!(date instanceof Date) || isNaN(date)) {
+                date = new Date();
+            }
+            
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}/${month}/${day}`;
+        }
+        
+        // 견적 프로그램에서 넘어올 때 업체 선택 팝업 표시
+        if (window.location.href.includes('from=estimate')) {
+            // 업체 선택 팝업 표시
+            document.getElementById('company-select-modal').style.display = 'flex';
+            
+            // 업체 선택 버튼 이벤트
+            document.getElementById('select-youngman').addEventListener('click', function() {
+                localStorage.setItem('selectedCompany', 'youngman');
+                document.getElementById('company-selection').value = 'youngman';
+                updateCompanyInfo('youngman');
+                document.getElementById('company-select-modal').style.display = 'none';
+            });
+            
+            document.getElementById('select-flowwall').addEventListener('click', function() {
+                localStorage.setItem('selectedCompany', 'flowwall');
+                document.getElementById('company-selection').value = 'flowwall';
+                updateCompanyInfo('flowwall');
+                document.getElementById('company-select-modal').style.display = 'none';
+            });
+        }
+    </script>
+</body>
+</html>

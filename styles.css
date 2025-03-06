@@ -1,0 +1,367 @@
+/* ===== 공통 스타일 ===== */
+:root {
+    --primary-color: #4a6da7;
+    --secondary-color: #f5f7fa;
+    --accent-color: #3b82f6;
+    --border-color: #e2e8f0;
+    --font-color: #334155;
+    --light-bg: #f8fafc;
+    --danger-color: #ef4444;
+    --success-color: #22c55e;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+    color: var(--font-color);
+    line-height: 1.6;
+    padding: 15px;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    color: var(--primary-color);
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+/* ===== 모달 공통 스타일 ===== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+    font-size: 20px;
+    color: var(--primary-color);
+}
+
+.close-modal {
+    font-size: 24px;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+.modal-section {
+    margin-bottom: 20px;
+}
+
+.modal-section h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.modal-footer button {
+    padding: 10px 15px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.save-btn {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.cancel-btn {
+    background-color: #e2e8f0;
+    color: var(--font-color);
+}
+
+/* ===== 견적 프로그램 스타일 ===== */
+.custom-settings {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: var(--light-bg);
+    border-radius: 8px;
+}
+
+.custom-settings select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.custom-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.custom-buttons button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    font-weight: 500;
+}
+
+#createCustomBtn {
+    background-color: var(--accent-color);
+}
+
+#editCustomBtn {
+    background-color: var(--success-color);
+}
+
+#deleteCustomBtn {
+    background-color: var(--danger-color);
+}
+
+.form-group {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: var(--light-bg);
+    border-radius: 8px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.form-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.form-row > div {
+    flex: 1 0 48%;
+    min-width: 150px;
+}
+
+select, input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+input[type="number"] {
+    text-align: right;
+}
+
+.info-text {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.section-title {
+    margin-top: 20px;
+    padding: 5px 0;
+    font-weight: 600;
+    border-bottom: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.result-row {
+    display: flex;
+    flex-direction: column;
+    padding: 15px 10px;
+    background-color: var(--light-bg);
+    border-radius: 8px;
+    margin-top: 20px;
+    font-weight: 600;
+}
+
+.result-row span {
+    margin-bottom: 5px;
+}
+
+.result-row .total {
+    color: var(--accent-color);
+    font-size: 18px;
+    margin-top: 5px;
+}
+
+.create-pdf-btn {
+    display: block;
+    width: 100%;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px;
+    text-align: center;
+    border: none;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.create-pdf-btn:hover {
+    background-color: #3a5a8e;
+}
+
+/* ===== PDF 견적서 스타일 ===== */
+.pdf-form-group {
+    margin-bottom: 15px;
+}
+
+.pdf-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.pdf-form-group input, .pdf-form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.pdf-form-group textarea {
+    min-height: 80px;
+}
+
+.pdf-preview {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.pdf-preview h3 {
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 20px;
+}
+
+.company-info {
+    text-align: right;
+    margin-bottom: 20px;
+}
+
+.estimate-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.estimate-table th, .estimate-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+.estimate-table th {
+    background-color: var(--light-bg);
+}
+
+.total-row {
+    font-weight: bold;
+}
+
+.pdf-notes {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.back-button {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 8px 16px;
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--font-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-button:hover {
+    background-color: #e2e8f0;
+}
+
+/* PC 화면용 스타일 */
+@media (min-width: 768px) {
+    .custom-settings {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .custom-settings select {
+        flex: 2;
+        margin-right: 10px;
+        margin-bottom: 0;
+    }
+    
+    .custom-buttons {
+        flex: 1;
+    }
+    
+    .result-row {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    
+    .result-row span {
+        flex: 1;
+        text-align: center;
+        margin-bottom: 0;
+    }
+}
