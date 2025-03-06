@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>도배장판 견적서</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- HTML2PDF 라이브러리 로드 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         /* 전체 스타일 */
         * {
             box-sizing: border-box;
             font-family: 'Noto Sans KR', sans-serif;
-            font-size: 14px; /* 기본 글꼴의 80% 정도 크기 */
+            font-size: 12px; /* 기본 글꼴의 70% 정도 크기 */
+            line-height: 1.2; /* 줄 간격 70% 감소 */
         }
         
         body {
@@ -38,7 +40,7 @@
         }
         
         .btn-primary {
-            background-color: #76b852;
+            background-color: #4a6da7; /* 도배장판 프로그램과 동일한 색상 */
             color: white;
         }
         
@@ -49,6 +51,11 @@
         
         .btn-danger {
             background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-archive {
+            background-color: #4a6da7;
             color: white;
         }
         
@@ -63,10 +70,21 @@
         
         @media (max-width: 768px) {
             .quote-container {
-                transform: scale(0.8);
-                transform-origin: top left;
-                width: 125%; /* PC 화면처럼 보이도록 조정 */
-                max-width: none;
+                width: 100%;
+                transform: none; /* 변형 제거 */
+                padding: 10px;
+            }
+            
+            #quote-preview {
+                width: 100%;
+                min-height: auto;
+                padding: 10px;
+            }
+            
+            .table-responsive {
+                overflow-x: auto;
+                display: block;
+                width: 100%;
             }
         }
         
@@ -77,18 +95,25 @@
         
         .preview-mode {
             display: none;
-            padding: 20px;
-            border: 1px solid #ddd;
+            padding: 15mm 20mm; /* 상하 15mm, 좌우 20mm 여백 */
+            border: none; /* 외곽 테두리 삭제 */
+            width: 210mm; /* A4 가로 크기 */
+            min-height: 297mm; /* A4 세로 크기 */
+            margin: 0 auto;
+            overflow: hidden; /* 내용이 넘치지 않게 설정 */
+            position: relative;
+            box-sizing: border-box;
         }
         
         /* 헤더 스타일 */
         .header {
             text-align: center;
             margin-bottom: 20px;
+            color: #4a6da7; /* 도배장판 프로그램과 동일한 색상 */
         }
         
         .header h1 {
-            color: #76b852;
+            color: #4a6da7; /* 도배장판 프로그램과 동일한 색상 */
             margin-bottom: 5px;
         }
         
@@ -117,7 +142,7 @@
         
         .company-select-content h2 {
             margin-top: 0;
-            color: #76b852;
+            color: #4a6da7; /* 도배장판 프로그램과 동일한 색상 */
         }
         
         .company-options {
@@ -131,12 +156,15 @@
         .quote-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 30px;
+            align-items: center; /* 상하 가운데 정렬 */
+            margin-bottom: 20px;
         }
         
         .quote-company {
-            flex: 1;
+            width: 40%; /* 좌측 영역 크기 */
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
         }
         
         .quote-title-section {
@@ -152,17 +180,19 @@
         
         .company-info {
             text-align: right;
-            line-height: 1.5;
+            line-height: 1.2;
         }
         
         .company-logo {
-            max-width: 150px;
+            max-width: 100%; /* 로고 너비 100%로 설정 */
             max-height: 100px;
-            margin-bottom: 10px;
+            object-fit: contain;
+            margin-right: 0;
+            vertical-align: middle; /* 상하 가운데 정렬 */
         }
         
         .divider {
-            border-top: 2px solid #76b852;
+            border-top: 1px solid #aaaaaa; /* 중간톤 회색으로 변경 */
             margin: 20px 0;
         }
         
@@ -174,7 +204,7 @@
         }
         
         .customer-info {
-            background-color: #f9f9f9;
+            background-color: #ffffff; /* 흰색으로 변경 */
             padding: 10px;
             border-radius: 4px;
             flex: 1;
@@ -190,19 +220,58 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            table-layout: fixed; /* 테이블 레이아웃 고정 */
         }
         
         .quote-table th {
             background-color: #76b852;
             color: white;
-            padding: 10px;
+            padding: 8px;
             text-align: center;
             border-bottom: 1px solid #ddd;
+            font-size: 11px;
         }
         
         .quote-table td {
-            padding: 10px;
+            padding: 8px;
             border-bottom: 1px solid #ddd;
+            font-size: 11px;
+            word-break: break-word;
+            overflow: hidden;
+        }
+        
+        /* 품목 칸을 더 넓게 */
+        .quote-table th:nth-child(1),
+        .quote-table td:nth-child(1) {
+            width: 50%; /* 품목 칸 너비 증가 */
+            text-align: left;
+        }
+        
+        /* 수량 칸 너비 줄이기 */
+        .quote-table th:nth-child(2),
+        .quote-table td:nth-child(2) {
+            width: 10%;
+            text-align: center;
+        }
+        
+        /* 가격 칸 너비 줄이기 */
+        .quote-table th:nth-child(3),
+        .quote-table td:nth-child(3) {
+            width: 15%;
+            text-align: right;
+        }
+        
+        /* 금액 칸 너비 줄이기 */
+        .quote-table th:nth-child(4),
+        .quote-table td:nth-child(4) {
+            width: 15%;
+            text-align: right;
+        }
+        
+        /* 관리 칸 너비 줄이기 (편집 모드에서만 해당) */
+        .quote-table th:nth-child(5),
+        .quote-table td:nth-child(5) {
+            width: 10%;
             text-align: center;
         }
         
@@ -223,11 +292,11 @@
         
         /* 견적서 푸터 */
         .quote-footer {
-            margin-top: 40px;
+            margin-top: 20px;
         }
         
         .memo-section {
-            margin-bottom: 30px;
+            margin-bottom: 10px;
         }
         
         .memo-title {
@@ -236,13 +305,29 @@
         }
         
         .memo-content {
-            margin-bottom: 20px;
-            line-height: 1.6;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            font-size: 9px; /* 일반 글씨의 50% 크기 */
         }
         
         .quote-signature {
             text-align: right;
-            margin-top: 50px;
+            margin-top: 40px;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #aaaaaa; /* 회색으로 변경 */
+            margin-top: 10px;
+            padding-top: 5px;
+            width: 200px;
+            margin-left: auto; /* 우측 정렬 */
+        }
+        
+        #preview-signature {
+            display: block;
+            max-width: 150px;
+            max-height: 80px;
+            margin-left: auto; /* 우측 정렬 */
         }
         
         /* 편집 모드 */
@@ -280,10 +365,16 @@
             background: none;
             width: 100%;
             outline: none;
+            min-height: 30px; /* 항목 입력 필드 높이 증가 */
         }
         
         .editable:focus {
             background-color: #f0f8ff;
+        }
+        
+        .item-description {
+            width: 100%;
+            min-height: 30px;
         }
         
         .btn-container {
@@ -321,8 +412,70 @@
             max-height: 60px;
             margin-left: 10px;
         }
+        
+        /* 견적서 보관함 모달 스타일 */
+        .archive-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .archive-table th, .archive-table td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        
+        .archive-table th {
+            background-color: #4a6da7;
+            color: white;
+        }
+        
+        .archive-table .amount-col {
+            text-align: right;
+        }
+        
+        .archive-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .modal-body {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .load-quote {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        /* PDF 출력용 설정 */
+        @media print {
+            body {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 0;
+            }
+            
+            #quote-preview {
+                width: 210mm;
+                min-height: 297mm;
+                margin: 0;
+                padding: 15mm 20mm; /* 상하 15mm, 좌우 20mm 여백 */
+                border: none;
+                overflow: visible !important; /* 내용이 잘리지 않게 */
+            }
+            
+            .quote-company, .quote-title-section, .quote-info,
+            .quote-table, .quote-footer {
+                page-break-inside: avoid; /* 요소가 페이지 나눔에 걸치지 않게 */
+            }
+        }
+
+
+
     </style>
-    <script src="scripts.js" defer></script>
 </head>
 <body>
     <div class="header">
@@ -343,13 +496,15 @@
     </div>
     
     <div class="quote-container">
-        <a href="estimate.html" class="back-button">&larr; 견적 프로그램으로 돌아가기</a>
+        <!-- 뒤로가기 버튼 - 파라미터 추가하여 작성 내용 유지 -->
+        <a href="estimate.html?keepData=true" class="back-button">&larr; 견적 프로그램으로 돌아가기</a>
         
         <!-- 수정 모드 / 미리보기 전환 버튼 -->
         <div class="btn-container">
             <button id="edit-mode-btn" class="btn btn-primary">수정 모드</button>
             <button id="preview-mode-btn" class="btn btn-secondary">최종 보기</button>
             <button id="download-pdf-btn" class="btn btn-primary">PDF 다운로드</button>
+            <button id="archive-btn" class="btn btn-archive">견적서 보관함</button>
         </div>
         
         <!-- 수정 모드 화면 -->
@@ -396,7 +551,7 @@
                 <h3>견적서 정보 설정</h3>
                 <div class="control-group">
                     <label for="quote-number">견적서 번호:</label>
-                    <input type="text" id="quote-number" value="21-320">
+                    <input type="text" id="quote-number" readonly>
                 </div>
                 <div class="control-group">
                     <label for="quote-date">견적 날짜:</label>
@@ -405,6 +560,10 @@
                 <div class="control-group">
                     <label for="customer-name">고객명/현장:</label>
                     <input type="text" id="customer-name" placeholder="고객명 또는 현장 정보">
+                </div>
+                <div class="control-group">
+                    <label for="customer-phone">연락처:</label>
+                    <input type="text" id="customer-phone" placeholder="고객 연락처">
                 </div>
             </div>
 
@@ -444,10 +603,10 @@
             </div>
 
             <div class="controls-container">
-                <h3>기타 항목</h3>
+                <h3>추가사항</h3>
                 <div class="control-group">
-                    <label for="extra-notes">기타 내용:</label>
-                    <textarea id="extra-notes" rows="2" placeholder="필요시 기타 내용을 입력하세요"></textarea>
+                    <label for="extra-notes">추가 내용:</label>
+                    <textarea id="extra-notes" rows="2" placeholder="필요시 추가 내용을 입력하세요"></textarea>
                 </div>
             </div>
 
@@ -504,9 +663,12 @@
             <div class="quote-info">
                 <div class="customer-info">
                     <div id="preview-customer">[고객명]<br>푸른 아름드리아파트 203동 702호 고객님</div>
+                    <div id="preview-customer-phone-container" style="display: none;">
+                        <div id="preview-customer-phone"></div>
+                    </div>
                 </div>
                 <div class="quote-details">
-                    견적서 # <span id="preview-quote-number">21-320</span><br>
+                    견적서 # <span id="preview-quote-number">1-25-03-6-1</span><br>
                     작성일자: <span id="preview-quote-date">2024/08/27</span>
                 </div>
             </div>
@@ -545,7 +707,7 @@
 
             <div id="extra-notes-section" style="display: none;">
                 <div class="memo-section">
-                    <div class="memo-title">기타:</div>
+                    <div class="memo-title">추가사항:</div>
                     <div id="preview-extra-notes" class="memo-content"></div>
                 </div>
             </div>
@@ -574,7 +736,7 @@
                 
                 <div class="quote-signature">
                     <img id="preview-signature" src="" style="display: none; max-width: 150px; max-height: 80px;">
-                    <div id="signature-line">
+                    <div class="signature-line">
                         <div id="preview-signature-date">2024/08/27</div>
                     </div>
                 </div>
@@ -583,471 +745,1010 @@
     </div>
 
     <script>
-        // 웹페이지 로드 시 실행
-        document.addEventListener('DOMContentLoaded', function() {
-            // 현재 날짜 설정
-            const today = new Date();
-            const dateString = today.toISOString().split('T')[0];
-            document.getElementById('quote-date').value = dateString;
-            
-            // localStorage에서 업체 선택 상태 확인
-            const selectedCompany = localStorage.getItem('selectedCompany');
-            if (selectedCompany) {
-                document.getElementById('company-selection').value = selectedCompany;
-                updateCompanyInfo(selectedCompany);
-            }
-            
-            // localStorage에서 견적 데이터 불러오기
-            loadEstimateData();
-            
-            // 수정/미리보기 모드 전환 버튼
-            document.getElementById('edit-mode-btn').addEventListener('click', function() {
-                document.querySelector('.edit-mode').style.display = 'block';
-                document.querySelector('.preview-mode').style.display = 'none';
-                this.classList.add('btn-primary');
-                this.classList.remove('btn-secondary');
-                document.getElementById('preview-mode-btn').classList.add('btn-secondary');
-                document.getElementById('preview-mode-btn').classList.remove('btn-primary');
-            });
-            
-            document.getElementById('preview-mode-btn').addEventListener('click', function() {
-                updatePreview();
-                document.querySelector('.edit-mode').style.display = 'none';
-                document.querySelector('.preview-mode').style.display = 'block';
-                this.classList.add('btn-primary');
-                this.classList.remove('btn-secondary');
-                document.getElementById('edit-mode-btn').classList.add('btn-secondary');
-                document.getElementById('edit-mode-btn').classList.remove('btn-primary');
-            });
-            
-            // PDF 다운로드 버튼
-            document.getElementById('download-pdf-btn').addEventListener('click', downloadPdf);
-            
-            // 항목 추가 버튼
-            document.getElementById('add-item-btn').addEventListener('click', addNewItem);
-            
-            // 할인 및 부가세 이벤트 리스너
-            document.getElementById('discount-percent').addEventListener('input', function() {
-                // 할인율이 변경되면 할인 금액 자동 계산
-                calculateDiscount();
-            });
-            
-            document.getElementById('discount-amount').addEventListener('input', function() {
-                // 할인 금액이 직접 입력되면 할인율 0으로 설정
-                document.getElementById('discount-percent').value = '0';
-                updateTotals();
-            });
-            
-            document.getElementById('vat-apply').addEventListener('change', updateTotals);
-            
-            // 업체 선택 이벤트 리스너
-            document.getElementById('company-selection').addEventListener('change', function() {
-                const company = this.value;
-                updateCompanyInfo(company);
-                localStorage.setItem('selectedCompany', company);
-            });
-            
-            // 로고 이미지 업로드
-            document.getElementById('company-logo-upload').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        const preview = document.getElementById('company-logo-preview');
-                        preview.src = event.target.result;
-                        preview.style.display = 'block';
-                        
-                        // 미리보기 로고도 업데이트
-                        const previewLogo = document.getElementById('preview-company-logo');
-                        previewLogo.src = event.target.result;
-                        previewLogo.style.display = 'block';
-                    }
-                    reader.readAsDataURL(file);
-                }
-            });
-            
-            // 서명 이미지 업로드
-            document.getElementById('signature-upload').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        const preview = document.getElementById('signature-preview');
-                        preview.src = event.target.result;
-                        preview.style.display = 'block';
-                        
-                        // 미리보기 서명도 업데이트
-                        const previewSignature = document.getElementById('preview-signature');
-                        previewSignature.src = event.target.result;
-                        previewSignature.style.display = 'block';
-                    }
-                    reader.readAsDataURL(file);
-                }
-            });
-            
-            // 기타 내용 변경 시 이벤트
-            document.getElementById('extra-notes').addEventListener('input', function() {
-                const extraNotesSection = document.getElementById('extra-notes-section');
-                if (this.value.trim()) {
-                    extraNotesSection.style.display = 'block';
-                    document.getElementById('preview-extra-notes').innerHTML = this.value.replace(/\n/g, '<br>');
+    // 견적서 관련 JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+        // 견적서 번호 생성 및 관리 (업체코드-년-월-일-카운터)
+        function generateQuoteNumber() {
+            try {
+                // 현재 날짜 정보 가져오기
+                const now = new Date();
+                const year = now.getFullYear().toString().substring(2); // 년도 끝 두 자리
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                
+                // 업체 코드 (1: 청년도배, 2: 플로우월)
+                const companyCode = document.getElementById('company-selection').value === 'youngman' ? '1' : '2';
+                
+                // 로컬 스토리지에서 카운터 가져오기
+                // 실제 서버 구현시 이 부분은 데이터베이스에서 가져오는 로직으로 대체됨
+                const dateKey = `${year}-${month}-${day}`;
+                const counterKey = `quoteCounter_${companyCode}_${dateKey}`;
+                
+                let counter = localStorage.getItem(counterKey);
+                if (!counter) {
+                    counter = 1;
                 } else {
-                    extraNotesSection.style.display = 'none';
+                    counter = parseInt(counter) + 1;
                 }
-            });
-        });
-        
-        // 업체 정보 업데이트
-        function updateCompanyInfo(company) {
-            if (company === 'youngman') {
-                // 청년도배 정보
-                document.getElementById('company-name').value = '청년도배';
-                document.getElementById('company-registration').value = '334-07-02064';
-                document.getElementById('company-phone').value = '01073076347';
-                document.getElementById('company-email').value = 'foryou600@gmail.com';
-                document.getElementById('company-address').value = '전북특별자치도 전주시 덕구 솔내2길 74-5, 1층 101호';
-                document.getElementById('notes').value = '합리적인 가격과 고품질 시공을 약속합니다.\n도배 장판 전문시공팀 "청년도배"';
-            } else if (company === 'flowwall') {
-                // 플로우월 정보
-                document.getElementById('company-name').value = '플로우월';
-                document.getElementById('company-registration').value = '123-45-67890';
-                document.getElementById('company-phone').value = '010-1234-5678';
-                document.getElementById('company-email').value = 'info@flowwall.com';
-                document.getElementById('company-address').value = '서울특별시 강남구 테헤란로 123, 8층 801호';
-                document.getElementById('notes').value = '고급 도배 솔루션 제공\n인테리어 벽지 전문기업 "플로우월"';
+                
+                // 카운터 저장 (서버에서는 트랜잭션으로 처리 필요)
+                localStorage.setItem(counterKey, counter);
+                
+                // 견적서 번호 형식: 업체코드-년-월-일-카운터
+                const quoteNumber = `${companyCode}-${year}-${month}-${day}-${counter}`;
+                
+                return quoteNumber;
+            } catch (error) {
+                console.error('견적서 번호 생성 오류:', error);
+                return 'ERROR-NUMBER';
             }
         }
+        
+        // 로고 이미지 저장 및 관리
+        function saveLogoImage(companyCode, imageData) {
+            try {
+                // 로컬 스토리지에 로고 이미지 저장
+                // 서버 구현시 이 부분은 서버에 파일 업로드로 대체됨
+                localStorage.setItem(`logo_${companyCode}`, imageData);
+            } catch (error) {
+                console.error('로고 이미지 저장 오류:', error);
+                alert('로고 이미지를 저장하는 중 오류가 발생했습니다.');
+            }
+        }
+        
+        // 로고 이미지 불러오기
+        function loadLogoImage(companyCode) {
+            try {
+                // 로컬 스토리지에서 로고 이미지 불러오기
+                // 서버 구현시 이 부분은 서버에서 파일 다운로드로 대체됨
+                return localStorage.getItem(`logo_${companyCode}`);
+            } catch (error) {
+                console.error('로고 이미지 불러오기 오류:', error);
+                return null;
+            }
+        }
+        
+        // 서명 이미지 저장 및 관리
+        function saveSignatureImage(companyCode, imageData) {
+            try {
+                // 로컬 스토리지에 서명 이미지 저장
+                localStorage.setItem(`signature_${companyCode}`, imageData);
+            } catch (error) {
+                console.error('서명 이미지 저장 오류:', error);
+                alert('서명 이미지를 저장하는 중 오류가 발생했습니다.');
+            }
+        }
+        
+        // 서명 이미지 불러오기
+        function loadSignatureImage(companyCode) {
+            try {
+                return localStorage.getItem(`signature_${companyCode}`);
+            } catch (error) {
+                console.error('서명 이미지 불러오기 오류:', error);
+                return null;
+            }
+        }
+        
+        // 현재 날짜 설정
+        const today = new Date();
+        const dateString = today.toISOString().split('T')[0];
+        document.getElementById('quote-date').value = dateString;
+        
+        // 견적서 번호 생성 및 표시
+        document.getElementById('quote-number').value = generateQuoteNumber();
+        
+        // localStorage에서 업체 선택 상태 확인
+        const selectedCompany = localStorage.getItem('selectedCompany') || 'youngman';
+        document.getElementById('company-selection').value = selectedCompany;
+        updateCompanyInfo(selectedCompany);
         
         // localStorage에서 견적 데이터 불러오기
-        function loadEstimateData() {
-            try {
-                const savedData = localStorage.getItem('wallpaperFlooringEstimateData');
-                if (!savedData) {
-                    // 기본 항목 추가
-                    addNewItem('도배 (장폭합지) 자재비 포함', 1, 720000);
-                    addNewItem('장판 (Kcc1.8t) 자재비 포함', 1, 480000);
-                    return;
-                }
-                
-                const data = JSON.parse(savedData);
-                
-                // 고객명/현장 설정
-                if (data.houseSize) {
-                    document.getElementById('customer-name').value = 
-                        `${data.houseSize}평형 현장`;
-                }
-                
-                // 도배 항목 추가
-                let livingType = "";
-                if (data.livingWallpaper === "1") livingType = "소폭";
-                else if (data.livingWallpaper === "2") livingType = "장폭";
-                else if (data.livingWallpaper === "3") livingType = "실크";
-                
-                let roomType = "";
-                if (data.roomWallpaper === "1") roomType = "소폭";
-                else if (data.roomWallpaper === "2") roomType = "장폭";
-                else if (data.roomWallpaper === "3") roomType = "실크";
-                
-                const wallpaperDesc = `도배 (${livingType}/${roomType}) 자재비 포함`;
-                addNewItem(wallpaperDesc, 1, data.totalWallpaper);
-                
-                // 장판 항목 추가
-                if (data.flooringType) {
-                    const flooringDesc = `장판 (Kcc${data.flooringType}t) 자재비 포함`;
-                    addNewItem(flooringDesc, 1, data.flooringPrice);
-                }
-                
-                // 견적 날짜 설정
-                if (data.createdAt) {
-                    const dateObj = new Date(data.createdAt);
-                    document.getElementById('quote-date').value = dateObj.toISOString().split('T')[0];
-                }
-                
-                // 미리보기 업데이트
-                updatePreview();
-            } catch (error) {
-                console.error('견적 데이터 로드 오류:', error);
-            }
+        loadEstimateData();
+        
+        // 로고 이미지 불러오기
+        const savedLogo = loadLogoImage(selectedCompany);
+        if (savedLogo) {
+            const logoPreview = document.getElementById('company-logo-preview');
+            logoPreview.src = savedLogo;
+            logoPreview.style.display = 'block';
+            
+            const previewLogo = document.getElementById('preview-company-logo');
+            previewLogo.src = savedLogo;
+            previewLogo.style.display = 'block';
         }
         
-        // 새 항목 추가
-        function addNewItem(description = '', quantity = 1, price = 0) {
-            const tbody = document.getElementById('edit-items-body');
-            const rowIndex = tbody.children.length;
+        // 서명 이미지 불러오기
+        const savedSignature = loadSignatureImage(selectedCompany);
+        if (savedSignature) {
+            const signaturePreview = document.getElementById('signature-preview');
+            signaturePreview.src = savedSignature;
+            signaturePreview.style.display = 'block';
             
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td><input type="text" class="editable item-description" value="${description}"></td>
-                <td><input type="number" class="editable item-quantity" value="${quantity}" min="1"></td>
-                <td><input type="number" class="editable item-price" value="${price}" min="0"></td>
-                <td class="amount-col item-total">${formatCurrency(quantity * price)}</td>
-                <td>
-                    <div class="item-controls">
-                        <button class="btn-danger item-delete" data-row="${rowIndex}">삭제</button>
-                    </div>
-                </td>
-            `;
-            
-            tbody.appendChild(newRow);
-            
-            // 항목 변경 이벤트 리스너 추가
-            const inputs = newRow.querySelectorAll('.editable');
-            inputs.forEach(input => {
-                input.addEventListener('input', function() {
-                    updateItemTotal(newRow);
-                    updateTotals();
-                });
-            });
-            
-            // 삭제 버튼 이벤트 리스너
-            newRow.querySelector('.item-delete').addEventListener('click', function() {
-                tbody.removeChild(newRow);
-                updateTotals();
-            });
-            
-            updateTotals();
+            const previewSignature = document.getElementById('preview-signature');
+            previewSignature.src = savedSignature;
+            previewSignature.style.display = 'block';
         }
         
-        // 항목 총액 업데이트
-        function updateItemTotal(row) {
-            const quantity = parseInt(row.querySelector('.item-quantity').value) || 0;
-            const price = parseInt(row.querySelector('.item-price').value) || 0;
-            const total = quantity * price;
-            
-            row.querySelector('.item-total').textContent = formatCurrency(total);
-        }
+        // 수정/미리보기 모드 전환 버튼
+        document.getElementById('edit-mode-btn').addEventListener('click', function() {
+            document.querySelector('.edit-mode').style.display = 'block';
+            document.querySelector('.preview-mode').style.display = 'none';
+            this.classList.add('btn-primary');
+            this.classList.remove('btn-secondary');
+            document.getElementById('preview-mode-btn').classList.add('btn-secondary');
+            document.getElementById('preview-mode-btn').classList.remove('btn-primary');
+        });
         
-        // 할인 계산
-        function calculateDiscount() {
-            const discountPercent = parseFloat(document.getElementById('discount-percent').value) || 0;
-            const subtotal = calculateSubtotal();
-            
-            if (discountPercent > 0) {
-                const discountAmount = Math.round(subtotal * (discountPercent / 100));
-                document.getElementById('discount-amount').value = discountAmount;
-            }
-            
-            updateTotals();
-        }
-        
-        // 소계 계산
-        function calculateSubtotal() {
-            let subtotal = 0;
-            const rows = document.getElementById('edit-items-body').children;
-            
-            for (let i = 0; i < rows.length; i++) {
-                const quantity = parseInt(rows[i].querySelector('.item-quantity').value) || 0;
-                const price = parseInt(rows[i].querySelector('.item-price').value) || 0;
-                subtotal += quantity * price;
-            }
-            
-            return subtotal;
-        }
-        
-        // 총액 업데이트
-        function updateTotals() {
-            const subtotal = calculateSubtotal();
-            const discountAmount = parseInt(document.getElementById('discount-amount').value) || 0;
-            const applyVAT = document.getElementById('vat-apply').checked;
-            
-            let total = subtotal - discountAmount;
-            let vat = 0;
-            
-            if (applyVAT) {
-                vat = Math.round(total * 0.1);
-                total += vat;
-            }
-        }
-        
-        // 미리보기 화면 업데이트
-        function updatePreview() {
-            // 회사 정보
-            document.getElementById('preview-company-name').textContent = document.getElementById('company-name').value;
-            document.getElementById('preview-registration').textContent = document.getElementById('company-registration').value;
-            document.getElementById('preview-phone').textContent = document.getElementById('company-phone').value;
-            document.getElementById('preview-email').textContent = document.getElementById('preview-email').value;
-            document.getElementById('preview-address').textContent = document.getElementById('company-address').value;
-            
-            // 견적 정보
-            document.getElementById('preview-quote-number').textContent = document.getElementById('quote-number').value;
-            
-            const quoteDate = new Date(document.getElementById('quote-date').value);
-            document.getElementById('preview-quote-date').textContent = formatDate(quoteDate);
-            document.getElementById('preview-signature-date').textContent = formatDate(quoteDate);
-            
-            // 고객 정보
-            const customerName = document.getElementById('customer-name').value;
-            document.getElementById('preview-customer').innerHTML = `${customerName}`;
-            
-            // 항목 정보
-            const previewBody = document.getElementById('preview-items-body');
-            previewBody.innerHTML = '';
-            
-            const rows = document.getElementById('edit-items-body').children;
-            for (let i = 0; i < rows.length; i++) {
-                const description = rows[i].querySelector('.item-description').value;
-                const quantity = rows[i].querySelector('.item-quantity').value;
-                const price = parseInt(rows[i].querySelector('.item-price').value) || 0;
-                const total = quantity * price;
-                
-                const newRow = document.createElement('tr');
-                newRow.innerHTML = `
-                    <td>${description}</td>
-                    <td>${quantity}</td>
-                    <td class="amount-col">₩${formatNumber(price)}</td>
-                    <td class="amount-col">₩${formatNumber(total)}</td>
-                `;
-                
-                previewBody.appendChild(newRow);
-            }
-            
-            // 금액 계산
-            const subtotal = calculateSubtotal();
-            const discountAmount = parseInt(document.getElementById('discount-amount').value) || 0;
-            const applyVAT = document.getElementById('vat-apply').checked;
-            
-            document.getElementById('preview-subtotal').textContent = formatCurrency(subtotal);
-            
-            // 할인 표시
-            if (discountAmount > 0) {
-                document.getElementById('discount-row').style.display = '';
-                document.getElementById('preview-discount').textContent = formatCurrency(discountAmount);
-            } else {
-                document.getElementById('discount-row').style.display = 'none';
-            }
-            
-            // 부가세 표시
-            let total = subtotal - discountAmount;
-            let vat = 0;
-            
-            if (applyVAT) {
-                vat = Math.round(total * 0.1);
-                total += vat;
-                document.getElementById('vat-row').style.display = '';
-                document.getElementById('preview-vat').textContent = formatCurrency(vat);
-            } else {
-                document.getElementById('vat-row').style.display = 'none';
-            }
-            
-            document.getElementById('preview-total').textContent = formatCurrency(total);
-            
-            // 기타 항목 내용
-            const extraNotes = document.getElementById('extra-notes').value.trim();
-            if (extraNotes) {
-                document.getElementById('extra-notes-section').style.display = 'block';
-                document.getElementById('preview-extra-notes').innerHTML = extraNotes.replace(/\n/g, '<br>');
-            } else {
-                document.getElementById('extra-notes-section').style.display = 'none';
-            }
-            
-            // 비고 정보
-            document.getElementById('preview-payment-terms').innerHTML = 
-                document.getElementById('payment-terms').value.replace(/\n/g, '<br>');
-            document.getElementById('preview-bank-info').innerHTML = 
-                document.getElementById('bank-info').value;
-            document.getElementById('preview-notes').innerHTML = 
-                document.getElementById('notes').value.replace(/\n/g, '<br>');
-            document.getElementById('preview-warranty').innerHTML = 
-                document.getElementById('warranty-info').value.replace(/\n/g, '<br>');
-        }
-        
-        // PDF 다운로드
-        function downloadPdf() {
-            // 미리보기 모드로 전환
+        document.getElementById('preview-mode-btn').addEventListener('click', function() {
             updatePreview();
             document.querySelector('.edit-mode').style.display = 'none';
             document.querySelector('.preview-mode').style.display = 'block';
+            this.classList.add('btn-primary');
+            this.classList.remove('btn-secondary');
+            document.getElementById('edit-mode-btn').classList.add('btn-secondary');
+            document.getElementById('edit-mode-btn').classList.remove('btn-primary');
+        });
+        
+        // PDF 다운로드 버튼
+        document.getElementById('download-pdf-btn').addEventListener('click', function() {
+            console.log("PDF 다운로드 버튼 클릭");
+            downloadPdfWithSave();
+        });
+        
+        // 견적서 보관함 버튼
+        document.getElementById('archive-btn').addEventListener('click', function() {
+            showArchiveModal();
+        });
+        
+        // 항목 추가 버튼
+        document.getElementById('add-item-btn').addEventListener('click', function() {
+            addNewItem();
+        });
+        
+        // 할인 및 부가세 이벤트 리스너
+        document.getElementById('discount-percent').addEventListener('input', function() {
+            // 할인율이 변경되면 할인 금액 자동 계산
+            calculateDiscount();
+        });
+        
+        document.getElementById('discount-amount').addEventListener('input', function() {
+            // 할인 금액이 직접 입력되면 할인율 0으로 설정
+            document.getElementById('discount-percent').value = '0';
+            updateTotals();
+        });
+        
+        document.getElementById('vat-apply').addEventListener('change', updateTotals);
+        
+        // 업체 선택 이벤트 리스너
+        document.getElementById('company-selection').addEventListener('change', function() {
+            const company = this.value;
+            updateCompanyInfo(company);
+            localStorage.setItem('selectedCompany', company);
             
-            // PDF 생성 옵션
-            const element = document.getElementById('quote-preview');
-            const customerName = document.getElementById('customer-name').value || '견적서';
-            const dateStr = new Date().toISOString().slice(0, 10);
+            // 견적서 번호 다시 생성
+            document.getElementById('quote-number').value = generateQuoteNumber();
             
-            const opt = {
-                margin: 10,
-                filename: `견적서_${customerName}_${dateStr}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+            // 해당 업체의 로고 불러오기
+            const savedLogo = loadLogoImage(company);
+            if (savedLogo) {
+                const logoPreview = document.getElementById('company-logo-preview');
+                logoPreview.src = savedLogo;
+                logoPreview.style.display = 'block';
+                
+                const previewLogo = document.getElementById('preview-company-logo');
+                previewLogo.src = savedLogo;
+                previewLogo.style.display = 'block';
+            } else {
+                document.getElementById('company-logo-preview').style.display = 'none';
+                document.getElementById('preview-company-logo').style.display = 'none';
+            }
             
-            // PDF 생성 및 다운로드
+            // 해당 업체의 서명 불러오기
+            const savedSignature = loadSignatureImage(company);
+            if (savedSignature) {
+                const signaturePreview = document.getElementById('signature-preview');
+                signaturePreview.src = savedSignature;
+                signaturePreview.style.display = 'block';
+                
+                const previewSignature = document.getElementById('preview-signature');
+                previewSignature.src = savedSignature;
+                previewSignature.style.display = 'block';
+            } else {
+                document.getElementById('signature-preview').style.display = 'none';
+                document.getElementById('preview-signature').style.display = 'none';
+            }
+        });
+        
+        // 로고 이미지 업로드
+        document.getElementById('company-logo-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imageData = event.target.result;
+                    const companyCode = document.getElementById('company-selection').value;
+                    
+                    // 로고 미리보기 업데이트
+                    const preview = document.getElementById('company-logo-preview');
+                    preview.src = imageData;
+                    preview.style.display = 'block';
+                    
+                    // 미리보기 로고도 업데이트
+                    const previewLogo = document.getElementById('preview-company-logo');
+                    previewLogo.src = imageData;
+                    previewLogo.style.display = 'block';
+                    
+                    // 로고 이미지 저장
+                    saveLogoImage(companyCode, imageData);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // 서명 이미지 업로드
+        document.getElementById('signature-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imageData = event.target.result;
+                    const companyCode = document.getElementById('company-selection').value;
+                    
+                    // 서명 미리보기 업데이트
+                    const preview = document.getElementById('signature-preview');
+                    preview.src = imageData;
+                    preview.style.display = 'block';
+                    
+                    // 미리보기 서명도 업데이트
+                    const previewSignature = document.getElementById('preview-signature');
+                    previewSignature.src = imageData;
+                    previewSignature.style.display = 'block';
+                    
+                    // 서명 이미지 저장
+                    saveSignatureImage(companyCode, imageData);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // 기타 내용 변경 시 이벤트
+        document.getElementById('extra-notes').addEventListener('input', function() {
+            const extraNotesSection = document.getElementById('extra-notes-section');
+            if (this.value.trim()) {
+                extraNotesSection.style.display = 'block';
+                document.getElementById('preview-extra-notes').innerHTML = this.value.replace(/\n/g, '<br>');
+            } else {
+                extraNotesSection.style.display = 'none';
+            }
+        });
+        
+        // 고객 연락처 변경 시 이벤트
+        document.getElementById('customer-phone').addEventListener('input', function() {
+            const phoneContainer = document.getElementById('preview-customer-phone-container');
+            if (this.value.trim()) {
+                phoneContainer.style.display = 'block';
+                document.getElementById('preview-customer-phone').textContent = this.value;
+            } else {
+                phoneContainer.style.display = 'none';
+            }
+        });
+    });
+    
+    // 업체 정보 업데이트
+    function updateCompanyInfo(company) {
+        if (company === 'youngman') {
+            // 청년도배 정보
+            document.getElementById('company-name').value = '청년도배';
+            document.getElementById('company-registration').value = '334-07-02064';
+            document.getElementById('company-phone').value = '01073076347';
+            document.getElementById('company-email').value = 'foryou600@gmail.com';
+            document.getElementById('company-address').value = '전북특별자치도 전주시 덕구 솔내2길 74-5, 1층 101호';
+            document.getElementById('notes').value = '합리적인 가격과 고품질 시공을 약속합니다.\n도배 장판 전문시공팀 "청년도배"';
+        } else if (company === 'flowwall') {
+            // 플로우월 정보
+            document.getElementById('company-name').value = '플로우월';
+            document.getElementById('company-registration').value = '123-45-67890';
+            document.getElementById('company-phone').value = '010-1234-5678';
+            document.getElementById('company-email').value = 'info@flowwall.com';
+            document.getElementById('company-address').value = '서울특별시 강남구 테헤란로 123, 8층 801호';
+            document.getElementById('notes').value = '고급 도배 솔루션 제공\n인테리어 벽지 전문기업 "플로우월"';
+        }
+    }
+    
+    // localStorage에서 견적 데이터 불러오기
+    function loadEstimateData() {
+        try {
+            const savedData = localStorage.getItem('wallpaperFlooringEstimateData');
+            if (!savedData) {
+                // 기본 항목 추가
+                addNewItem('도배 (장폭합지) 자재비 포함', 1, 720000);
+                addNewItem('장판 (Kcc1.8t) 자재비 포함', 1, 480000);
+                return;
+            }
+            
+            const data = JSON.parse(savedData);
+            
+            // 고객명/현장 설정
+            if (data.houseSize) {
+                document.getElementById('customer-name').value = 
+                    `${data.houseSize}평형 현장`;
+            }
+            
+            // 도배 항목 추가
+            let livingType = "";
+            if (data.livingWallpaper === "1") livingType = "소폭";
+            else if (data.livingWallpaper === "2") livingType = "장폭";
+            else if (data.livingWallpaper === "3") livingType = "실크";
+            
+            let roomType = "";
+            if (data.roomWallpaper === "1") roomType = "소폭";
+            else if (data.roomWallpaper === "2") roomType = "장폭";
+            else if (data.roomWallpaper === "3") roomType = "실크";
+            
+            const wallpaperDesc = `도배 (${livingType}/${roomType}) 자재비 포함`;
+            addNewItem(wallpaperDesc, 1, data.totalWallpaper);
+            
+            // 장판 항목 추가
+            if (data.flooringType) {
+                const flooringDesc = `장판 (Kcc${data.flooringType}t) 자재비 포함`;
+                addNewItem(flooringDesc, 1, data.flooringPrice);
+            }
+            
+            // 견적 날짜 설정
+            if (data.createdAt) {
+                const dateObj = new Date(data.createdAt);
+                document.getElementById('quote-date').value = dateObj.toISOString().split('T')[0];
+            }
+            
+            // 미리보기 업데이트
+            updatePreview();
+        } catch (error) {
+            console.error('견적 데이터 로드 오류:', error);
+        }
+    }
+    
+    // 새 항목 추가
+    function addNewItem(description = '', quantity = 1, price = 0) {
+        const tbody = document.getElementById('edit-items-body');
+        const rowIndex = tbody.children.length;
+        
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td><input type="text" class="editable item-description" value="${description}"></td>
+            <td><input type="number" class="editable item-quantity" value="${quantity}" min="1"></td>
+            <td><input type="number" class="editable item-price" value="${price}" min="0"></td>
+            <td class="amount-col item-total">${formatCurrency(quantity * price)}</td>
+            <td>
+                <div class="item-controls">
+                    <button class="btn-danger item-delete">삭제</button>
+                </div>
+            </td>
+        `;
+        
+        tbody.appendChild(newRow);
+        
+        // 항목 변경 이벤트 리스너 추가
+        const inputs = newRow.querySelectorAll('.editable');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                updateItemTotal(newRow);
+                updateTotals();
+            });
+        });
+        
+        // 삭제 버튼 이벤트 리스너
+        newRow.querySelector('.item-delete').addEventListener('click', function() {
+            tbody.removeChild(newRow);
+            updateTotals();
+        });
+        
+        updateTotals();
+    }
+    
+    // 항목 총액 업데이트
+    function updateItemTotal(row) {
+        const quantity = parseInt(row.querySelector('.item-quantity').value) || 0;
+        const price = parseInt(row.querySelector('.item-price').value) || 0;
+        const total = quantity * price;
+        
+        row.querySelector('.item-total').textContent = formatCurrency(total);
+    }
+    
+    // 할인 계산
+    function calculateDiscount() {
+        const discountPercent = parseFloat(document.getElementById('discount-percent').value) || 0;
+        const subtotal = calculateSubtotal();
+        
+        if (discountPercent > 0) {
+            const discountAmount = Math.round(subtotal * (discountPercent / 100));
+            document.getElementById('discount-amount').value = discountAmount;
+        }
+        
+        updateTotals();
+    }
+    
+    // 소계 계산
+    function calculateSubtotal() {
+        let subtotal = 0;
+        const rows = document.getElementById('edit-items-body').children;
+        
+        for (let i = 0; i < rows.length; i++) {
+            const quantity = parseInt(rows[i].querySelector('.item-quantity').value) || 0;
+            const price = parseInt(rows[i].querySelector('.item-price').value) || 0;
+            subtotal += quantity * price;
+        }
+        
+        return subtotal;
+    }
+    
+    // 총액 업데이트
+    function updateTotals() {
+        const subtotal = calculateSubtotal();
+        const discountAmount = parseInt(document.getElementById('discount-amount').value) || 0;
+        const applyVAT = document.getElementById('vat-apply').checked;
+        
+        let total = subtotal - discountAmount;
+        let vat = 0;
+        
+        if (applyVAT) {
+            vat = Math.round(total * 0.1);
+            total += vat;
+        }
+    }
+    
+    // 미리보기 화면 업데이트
+    function updatePreview() {
+        // 회사 정보
+        document.getElementById('preview-company-name').textContent = document.getElementById('company-name').value;
+        document.getElementById('preview-registration').textContent = document.getElementById('company-registration').value;
+        document.getElementById('preview-phone').textContent = document.getElementById('company-phone').value;
+        document.getElementById('preview-email').textContent = document.getElementById('company-email').value;
+        document.getElementById('preview-address').textContent = document.getElementById('company-address').value;
+        
+        // 견적 정보
+        document.getElementById('preview-quote-number').textContent = document.getElementById('quote-number').value;
+        
+        const quoteDate = new Date(document.getElementById('quote-date').value);
+        document.getElementById('preview-quote-date').textContent = formatDate(quoteDate);
+        document.getElementById('preview-signature-date').textContent = formatDate(quoteDate);
+        
+        // 고객 정보
+        const customerName = document.getElementById('customer-name').value;
+        document.getElementById('preview-customer').innerHTML = customerName;
+        
+        // 고객 연락처
+        const customerPhone = document.getElementById('customer-phone').value;
+        const phoneContainer = document.getElementById('preview-customer-phone-container');
+        if (customerPhone.trim()) {
+            phoneContainer.style.display = 'block';
+            document.getElementById('preview-customer-phone').textContent = customerPhone;
+        } else {
+            phoneContainer.style.display = 'none';
+        }
+        
+        // 항목 정보
+        const previewBody = document.getElementById('preview-items-body');
+        previewBody.innerHTML = '';
+        
+        const rows = document.getElementById('edit-items-body').children;
+        for (let i = 0; i < rows.length; i++) {
+            const description = rows[i].querySelector('.item-description').value;
+            const quantity = rows[i].querySelector('.item-quantity').value;
+            const price = parseInt(rows[i].querySelector('.item-price').value) || 0;
+            const total = quantity * price;
+            
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${description}</td>
+                <td>${quantity}</td>
+                <td class="amount-col">₩${formatNumber(price)}</td>
+                <td class="amount-col">₩${formatNumber(total)}</td>
+            `;
+            
+            previewBody.appendChild(newRow);
+        }
+        
+        // 금액 계산
+        const subtotal = calculateSubtotal();
+        const discountAmount = parseInt(document.getElementById('discount-amount').value) || 0;
+        const applyVAT = document.getElementById('vat-apply').checked;
+        
+        document.getElementById('preview-subtotal').textContent = formatCurrency(subtotal);
+        
+        // 할인 표시
+        if (discountAmount > 0) {
+            document.getElementById('discount-row').style.display = '';
+            document.getElementById('preview-discount').textContent = formatCurrency(discountAmount);
+        } else {
+            document.getElementById('discount-row').style.display = 'none';
+        }
+        
+        // 부가세 표시
+        let total = subtotal - discountAmount;
+        let vat = 0;
+        
+        if (applyVAT) {
+            vat = Math.round(total * 0.1);
+            total += vat;
+            document.getElementById('vat-row').style.display = '';
+            document.getElementById('preview-vat').textContent = formatCurrency(vat);
+        } else {
+            document.getElementById('vat-row').style.display = 'none';
+        }
+        
+        document.getElementById('preview-total').textContent = formatCurrency(total);
+        
+        // 추가 항목 내용
+        const extraNotes = document.getElementById('extra-notes').value.trim();
+        if (extraNotes) {
+            document.getElementById('extra-notes-section').style.display = 'block';
+            document.getElementById('preview-extra-notes').innerHTML = extraNotes.replace(/\n/g, '<br>');
+        } else {
+            document.getElementById('extra-notes-section').style.display = 'none';
+        }
+        
+        // 비고 정보
+        document.getElementById('preview-payment-terms').innerHTML = 
+            document.getElementById('payment-terms').value.replace(/\n/g, '<br>');
+        document.getElementById('preview-bank-info').innerHTML = 
+            document.getElementById('bank-info').value;
+        document.getElementById('preview-notes').innerHTML = 
+            document.getElementById('notes').value.replace(/\n/g, '<br>');
+        document.getElementById('preview-warranty').innerHTML = 
+            document.getElementById('warranty-info').value.replace(/\n/g, '<br>');
+    }
+    
+    // PDF 다운로드
+    function downloadPdf() {
+        // 미리보기 모드로 전환
+        updatePreview();
+        document.querySelector('.edit-mode').style.display = 'none';
+        document.querySelector('.preview-mode').style.display = 'block';
+        
+        // 디버깅 메시지
+        console.log('PDF 다운로드 시작...');
+        
+        // PDF 생성 옵션
+        const element = document.getElementById('quote-preview');
+        const customerName = document.getElementById('customer-name').value || '견적서';
+        const dateStr = new Date().toISOString().slice(0, 10);
+        
+        // PDF 내용의 원래 스타일 저장
+        const originalStyle = element.style.cssText;
+        const originalBodyStyle = document.body.style.cssText;
+        
+        // PDF 생성 준비
+        element.style.width = '210mm';
+        element.style.padding = '15mm 20mm'; // 상하 15mm, 좌우 20mm 여백
+        element.style.margin = '0 auto';
+        element.style.boxSizing = 'border-box';
+        element.style.border = 'none';
+        
+        document.body.style.width = '210mm';
+        document.body.style.margin = '0';
+        document.body.style.padding = '0';
+        document.body.style.backgroundColor = 'white';
+        
+        const opt = {
+            margin: [0, 0, 0, 0], // 여백은 HTML에서 처리하므로 0으로 설정
+            filename: `견적서_${customerName}_${dateStr}.pdf`,
+            image: { type: 'jpeg', quality: 1.0 },
+            html2canvas: { 
+                scale: 2, 
+                useCORS: true,
+                letterRendering: true,
+                logging: true
+            },
+            jsPDF: { 
+                unit: 'mm', 
+                format: 'a4', 
+                orientation: 'portrait',
+                compress: true
+            },
+            pagebreak: { mode: 'avoid-all' }
+        };
+        
+        // HTML2PDF 라이브러리 사용하여 PDF 생성
+        try {
+            console.log('HTML2PDF 객체 생성 시작');
+            if (typeof html2pdf === 'undefined') {
+                console.error('html2pdf 라이브러리를 찾을 수 없습니다.');
+                alert('PDF 생성 라이브러리가 로드되지 않았습니다. 페이지를 새로고침 후 다시 시도해주세요.');
+                // 원래 스타일로 복원
+                element.style.cssText = originalStyle;
+                document.body.style.cssText = originalBodyStyle;
+                return;
+            }
+            
             html2pdf().set(opt).from(element).save().then(() => {
+                console.log('PDF 생성 완료');
+                
+                // 원래 스타일로 복원
+                element.style.cssText = originalStyle;
+                document.body.style.cssText = originalBodyStyle;
+                
                 // 서버 저장 기능이 구현되면 여기에 추가 (현재는 주석 처리)
                 // saveToServer(customerName, dateStr);
                 
-                alert('PDF가 생성되었습니다. 서버 저장 기능은 추후 구현될 예정입니다.');
+                alert('PDF가 생성되었습니다.');
+            }).catch(err => {
+                console.error('PDF 생성 오류:', err);
+                alert('PDF 생성 중 오류가 발생했습니다: ' + err.message);
+                
+                // 원래 스타일로 복원
+                element.style.cssText = originalStyle;
+                document.body.style.cssText = originalBodyStyle;
             });
+        } catch (error) {
+            console.error('PDF 생성 시도 중 예외 발생:', error);
+            alert('PDF 생성 기능 초기화 중 오류: ' + error.message);
+            
+            // 원래 스타일로 복원
+            element.style.cssText = originalStyle;
+            document.body.style.cssText = originalBodyStyle;
         }
+    }
+    
+    // 견적 프로그램에서 넘어올 때 업체 선택 팝업 표시
+    if (window.location.href.includes('from=estimate')) {
+        // 업체 선택 팝업 표시
+        document.getElementById('company-select-modal').style.display = 'flex';
         
-        // 서버에 저장하는 함수 (추후 서버 구현 시 활성화)
-        function saveToServer(customerName, dateStr) {
-            // 예시 코드 (실제 구현 시 수정 필요)
-            // const data = {
-            //     customerName: customerName,
-            //     quoteNumber: document.getElementById('quote-number').value,
-            //     quoteDate: dateStr,
-            //     // 기타 필요한 데이터
-            // };
-            // 
-            // fetch('/api/quotes', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(data)
-            // })
-            // .then(response => response.json())
-            // .then(result => {
-            //     console.log('서버 저장 성공:', result);
-            //     alert('견적서가 서버에 저장되었습니다.');
-            // })
-            // .catch(error => {
-            //     console.error('서버 저장 오류:', error);
-            //     alert('서버 저장 중 오류가 발생했습니다.');
-            // });
-        }
-        
-        // 금액 포맷 (1,000,000 형식)
-        function formatNumber(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-        
-        // 통화 포맷 (₩1,000,000 형식)
-        function formatCurrency(num) {
-            return `₩${formatNumber(num)}`;
-        }
-        
-        // 날짜 포맷 (YYYY/MM/DD 형식)
-        function formatDate(date) {
-            if (!(date instanceof Date) || isNaN(date)) {
-                date = new Date();
+        // 업체 선택 버튼 이벤트
+        document.getElementById('select-youngman').addEventListener('click', function() {
+            localStorage.setItem('selectedCompany', 'youngman');
+            document.getElementById('company-selection').value = 'youngman';
+            updateCompanyInfo('youngman');
+            document.getElementById('company-select-modal').style.display = 'none';
+            
+            // 견적서 번호 다시 생성
+            document.getElementById('quote-number').value = generateQuoteNumber();
+            
+            // 로고 이미지 불러오기
+            const savedLogo = loadLogoImage('youngman');
+            if (savedLogo) {
+                const logoPreview = document.getElementById('company-logo-preview');
+                logoPreview.src = savedLogo;
+                logoPreview.style.display = 'block';
+                
+                const previewLogo = document.getElementById('preview-company-logo');
+                previewLogo.src = savedLogo;
+                previewLogo.style.display = 'block';
             }
             
-            const year = date.getFullYear();
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const day = date.getDate().toString().padStart(2, '0');
-            return `${year}/${month}/${day}`;
+            // 서명 이미지 불러오기
+            const savedSignature = loadSignatureImage('youngman');
+            if (savedSignature) {
+                const signaturePreview = document.getElementById('signature-preview');
+                signaturePreview.src = savedSignature;
+                signaturePreview.style.display = 'block';
+                
+                const previewSignature = document.getElementById('preview-signature');
+                previewSignature.src = savedSignature;
+                previewSignature.style.display = 'block';
+            }
+        });
+        
+        document.getElementById('select-flowwall').addEventListener('click', function() {
+            localStorage.setItem('selectedCompany', 'flowwall');
+            document.getElementById('company-selection').value = 'flowwall';
+            updateCompanyInfo('flowwall');
+            document.getElementById('company-select-modal').style.display = 'none';
+            
+            // 견적서 번호 다시 생성
+            document.getElementById('quote-number').value = generateQuoteNumber();
+            
+            // 로고 이미지 불러오기
+            const savedLogo = loadLogoImage('flowwall');
+            if (savedLogo) {
+                const logoPreview = document.getElementById('company-logo-preview');
+                logoPreview.src = savedLogo;
+                logoPreview.style.display = 'block';
+                
+                const previewLogo = document.getElementById('preview-company-logo');
+                previewLogo.src = savedLogo;
+                previewLogo.style.display = 'block';
+            }
+            
+            // 서명 이미지 불러오기
+            const savedSignature = loadSignatureImage('flowwall');
+            if (savedSignature) {
+                const signaturePreview = document.getElementById('signature-preview');
+                signaturePreview.src = savedSignature;
+                signaturePreview.style.display = 'block';
+                
+                const previewSignature = document.getElementById('preview-signature');
+                previewSignature.src = savedSignature;
+                previewSignature.style.display = 'block';
+            }
+        });
+    }
+    
+    // 견적서 저장 및 보관 기능
+    
+    // 로컬 스토리지 키 정의 (나중에 서버 구현 시 API 경로로 대체 가능)
+    const QUOTE_ARCHIVE_KEY = 'quoteArchive';
+    
+    // 견적서 데이터 저장
+    function saveQuoteToArchive() {
+        try {
+            // 현재 견적서 정보 가져오기
+            const quoteNumber = document.getElementById('quote-number').value;
+            const quoteDate = document.getElementById('quote-date').value;
+            const customerName = document.getElementById('customer-name').value || '미지정 고객';
+            const companyCode = document.getElementById('company-selection').value;
+            
+            // 견적 항목 정보 가져오기
+            const items = [];
+            const rows = document.getElementById('edit-items-body').children;
+            
+            for (let i = 0; i < rows.length; i++) {
+                const description = rows[i].querySelector('.item-description').value;
+                const quantity = parseInt(rows[i].querySelector('.item-quantity').value) || 0;
+                const price = parseInt(rows[i].querySelector('.item-price').value) || 0;
+                
+                items.push({
+                    description,
+                    quantity,
+                    price,
+                    total: quantity * price
+                });
+            }
+            
+            // 금액 정보 계산
+            const subtotal = calculateSubtotal();
+            const discountAmount = parseInt(document.getElementById('discount-amount').value) || 0;
+            const applyVAT = document.getElementById('vat-apply').checked;
+            let vat = 0;
+            let totalAmount = subtotal - discountAmount;
+            
+            if (applyVAT) {
+                vat = Math.round(totalAmount * 0.1);
+                totalAmount += vat;
+            }
+            
+            // 기타 정보
+            const extraNotes = document.getElementById('extra-notes').value;
+            const paymentTerms = document.getElementById('payment-terms').value;
+            const bankInfo = document.getElementById('bank-info').value;
+            const warrantyInfo = document.getElementById('warranty-info').value;
+            const notes = document.getElementById('notes').value;
+            
+            // 견적서 데이터 객체 생성
+            const quoteData = {
+                id: quoteNumber, // 견적서 번호를 ID로 사용
+                quoteNumber, // 견적서 번호 (나중에 수정 불가)
+                quoteDate,
+                customerName,
+                companyCode,
+                items,
+                subtotal,
+                discountAmount,
+                applyVAT,
+                vat,
+                totalAmount,
+                extraNotes,
+                paymentTerms,
+                bankInfo,
+                warrantyInfo,
+                notes,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            // 로컬 스토리지에서 기존 견적서 목록 가져오기
+            let quoteArchive = JSON.parse(localStorage.getItem(QUOTE_ARCHIVE_KEY) || '[]');
+            
+            // 견적서 번호로 기존 견적서 찾기
+            const existingIndex = quoteArchive.findIndex(q => q.quoteNumber === quoteNumber);
+            
+            if (existingIndex !== -1) {
+                // 기존 견적서 업데이트 (견적서 번호는 변경 불가)
+                quoteData.createdAt = quoteArchive[existingIndex].createdAt; // 원래 생성 시간 유지
+                quoteArchive[existingIndex] = quoteData;
+            } else {
+                // 새 견적서 추가
+                quoteArchive.push(quoteData);
+            }
+            
+            // 로컬 스토리지에 저장
+            localStorage.setItem(QUOTE_ARCHIVE_KEY, JSON.stringify(quoteArchive));
+            
+            return true;
+        } catch (error) {
+            console.error('견적서 저장 오류:', error);
+            return false;
+        }
+    }
+    
+    // 견적서 보관함에서 견적서 불러오기
+    function loadQuoteFromArchive(quoteNumber) {
+        try {
+            // 로컬 스토리지에서 견적서 목록 가져오기
+            const quoteArchive = JSON.parse(localStorage.getItem(QUOTE_ARCHIVE_KEY) || '[]');
+            
+            // 견적서 번호로 견적서 찾기
+            const quote = quoteArchive.find(q => q.quoteNumber === quoteNumber);
+            
+            if (!quote) {
+                alert('견적서를 찾을 수 없습니다.');
+                return false;
+            }
+            
+            // 견적서 정보 입력 필드에 채우기
+            document.getElementById('quote-number').value = quote.quoteNumber;
+            document.getElementById('quote-date').value = quote.quoteDate;
+            document.getElementById('customer-name').value = quote.customerName;
+            document.getElementById('company-selection').value = quote.companyCode;
+            updateCompanyInfo(quote.companyCode);
+            
+            // 할인 및 부가세 설정
+            document.getElementById('discount-amount').value = quote.discountAmount;
+            document.getElementById('vat-apply').checked = quote.applyVAT;
+            
+            // 항목 테이블 초기화
+            const tbody = document.getElementById('edit-items-body');
+            tbody.innerHTML = '';
+            
+            // 항목 추가
+            for (const item of quote.items) {
+                addNewItem(item.description, item.quantity, item.price);
+            }
+            
+            // 기타 정보 설정
+            document.getElementById('extra-notes').value = quote.extraNotes || '';
+            document.getElementById('payment-terms').value = quote.paymentTerms || '';
+            document.getElementById('bank-info').value = quote.bankInfo || '';
+            document.getElementById('warranty-info').value = quote.warrantyInfo || '';
+            document.getElementById('notes').value = quote.notes || '';
+            
+            // 미리보기 업데이트
+            updatePreview();
+            
+            return true;
+        } catch (error) {
+            console.error('견적서 불러오기 오류:', error);
+            return false;
+        }
+    }
+    
+    // 견적서 보관함 모달 표시
+    function showArchiveModal() {
+        try {
+            // 로컬 스토리지에서 견적서 목록 가져오기
+            const quoteArchive = JSON.parse(localStorage.getItem(QUOTE_ARCHIVE_KEY) || '[]');
+            
+            // 견적서가 없을 경우
+            if (quoteArchive.length === 0) {
+                alert('저장된 견적서가 없습니다.');
+                return;
+            }
+            
+            // 모달 컨텐츠 생성
+            let modalHtml = `
+                <div id="archiveModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>견적서 보관함</h2>
+                            <button class="close-modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="archive-list">
+                                <table class="archive-table">
+                                    <thead>
+                                        <tr>
+                                            <th>견적번호</th>
+                                            <th>날짜</th>
+                                            <th>고객명/현장</th>
+                                            <th>금액</th>
+                                            <th>작업</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+            `;
+            
+            // 견적서 목록 정렬 (최신순)
+            quoteArchive.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+            
+            // 견적서 목록 추가
+            for (const quote of quoteArchive) {
+                const quoteDate = new Date(quote.quoteDate).toLocaleDateString();
+                modalHtml += `
+                    <tr>
+                        <td>${quote.quoteNumber}</td>
+                        <td>${quoteDate}</td>
+                        <td>${quote.customerName}</td>
+                        <td class="amount-col">${quote.totalAmount.toLocaleString()}원</td>
+                        <td>
+                            <button class="btn-secondary load-quote" data-id="${quote.quoteNumber}">불러오기</button>
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            modalHtml += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="cancel-btn">닫기</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 기존 모달 제거
+            const oldModal = document.getElementById('archiveModal');
+            if (oldModal) {
+                oldModal.remove();
+            }
+            
+            // 모달 추가
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 모달 표시
+            const modal = document.getElementById('archiveModal');
+            modal.style.display = 'block';
+            
+            // 이벤트 리스너 추가
+            modal.querySelector('.close-modal').addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            
+            modal.querySelector('.cancel-btn').addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            
+            // 견적서 불러오기 버튼 이벤트
+            const loadButtons = modal.querySelectorAll('.load-quote');
+            loadButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const quoteId = button.getAttribute('data-id');
+                    loadQuoteFromArchive(quoteId);
+                    modal.style.display = 'none';
+                });
+            });
+        } catch (error) {
+            console.error('견적서 보관함 표시 오류:', error);
+            alert('견적서 보관함을 불러오는 중 오류가 발생했습니다.');
+        }
+    }
+    
+    // PDF 다운로드 시 견적서 자동 저장
+    function downloadPdfWithSave() {
+        // 견적서 저장
+        if (saveQuoteToArchive()) {
+            console.log('견적서가 보관함에 저장되었습니다.');
         }
         
-        // 견적 프로그램에서 넘어올 때 업체 선택 팝업 표시
-        if (window.location.href.includes('from=estimate')) {
-            // 업체 선택 팝업 표시
-            document.getElementById('company-select-modal').style.display = 'flex';
-            
-            // 업체 선택 버튼 이벤트
-            document.getElementById('select-youngman').addEventListener('click', function() {
-                localStorage.setItem('selectedCompany', 'youngman');
-                document.getElementById('company-selection').value = 'youngman';
-                updateCompanyInfo('youngman');
-                document.getElementById('company-select-modal').style.display = 'none';
-            });
-            
-            document.getElementById('select-flowwall').addEventListener('click', function() {
-                localStorage.setItem('selectedCompany', 'flowwall');
-                document.getElementById('company-selection').value = 'flowwall';
-                updateCompanyInfo('flowwall');
-                document.getElementById('company-select-modal').style.display = 'none';
-            });
+        // PDF 다운로드
+        downloadPdf();
+    }
+    
+    // 금액 포맷 (1,000,000 형식)
+    function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    // 통화 포맷 (₩1,000,000 형식)
+    function formatCurrency(num) {
+        return `₩${formatNumber(num)}`;
+    }
+    
+    // 날짜 포맷 (YYYY/MM/DD 형식)
+    function formatDate(date) {
+        if (!(date instanceof Date) || isNaN(date)) {
+            date = new Date();
         }
+        
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        return `${year}/${month}/${day}`;
+    }
+
+
     </script>
 </body>
 </html>
